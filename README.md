@@ -1,339 +1,216 @@
-# Graffiti Detection AI Model
+# 🎨 Graffiti Detection AI Model
 
-An AI-powered object detection system using YOLOv8 to identify and locate graffiti across various contexts including walls, buildings, over-bridges, vehicles, and other surfaces.
+**AI-Powered Graffiti Detection Using YOLOv8**
 
-## Overview
+![Graffiti Detection](https://img.shields.io/badge/YOLOv8-Object%20Detection-blue?style=for-the-badge&logo=pytorch)
+![Python](https://img.shields.io/badge/Python-3.8+-green?style=for-the-badge&logo=python)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-This project implements a deep learning model to automatically detect graffiti in images, helping authorities and property managers identify and address vandalism efficiently. The model can detect different types of graffiti across multiple surface contexts.
+> [!NOTE]
+> **Production-Ready Graffiti Detection System**
+> 
+> Detect graffiti across multiple contexts including walls, buildings, bridges, and vehicles. Built with YOLOv8 for real-time, accurate detection.
 
-## Features
+An end-to-end deep learning system that automatically identifies and locates graffiti in images, helping authorities and property managers efficiently address urban vandalism.
 
-- **Multi-context Detection**: Detects graffiti on walls, buildings, bridges, cars, trains, and other surfaces
-- **Real-time Inference**: Fast detection using optimized YOLOv8 architecture
-- **Comprehensive Metrics**: Evaluation with mAP, precision, recall, and F1-score
-- **Data Augmentation**: Robust training with extensive augmentation techniques
-- **Visualization Tools**: Annotated predictions with bounding boxes and confidence scores
-- **Flexible Architecture**: Support for YOLOv8n/s/m/l/x variants based on speed vs accuracy needs
+**Key Features:**
+- 🎯 Multi-context detection (walls, buildings, bridges, vehicles)
+- ⚡ Real-time inference with optimized YOLOv8 architecture
+- 📊 Complete training, evaluation, and deployment pipeline
+- 🎨 Advanced data augmentation (weather, lighting, geometric transforms)
+- 🛡️ Production-ready exports (ONNX, TensorRT, CoreML)
 
-## Project Structure
+## Table of Contents
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Training](#training)
+- [Inference](#inference)
+- [Evaluation](#evaluation)
+- [Export & Deployment](#export--deployment)
+- [Contributing](#contributing)
+- [Author](#author)
 
-```
-graffiti-detection-ai-model/
-├── README.md                          # Project documentation
-├── requirements.txt                   # Python dependencies
-├── .gitignore                         # Git ignore rules
-│
-├── data/                              # Dataset directory
-│   ├── raw/                           # Raw images
-│   ├── images/                        # Processed images
-│   ├── labels/                        # YOLO format annotations
-│   ├── train.txt                      # Training set paths
-│   ├── val.txt                        # Validation set paths
-│   └── test.txt                       # Test set paths
-│
-├── src/                               # Source code
-│   ├── models/                        # Model architectures
-│   ├── data/                          # Data processing
-│   ├── training/                      # Training utilities
-│   ├── evaluation/                    # Evaluation utilities
-│   └── utils/                         # General utilities
-│
-├── configs/                           # Configuration files
-│   ├── dataset.yaml                   # Dataset configuration
-│   ├── model.yaml                     # Model architecture config
-│   └── training.yaml                  # Training hyperparameters
-│
-├── notebooks/                         # Jupyter notebooks
-│   ├── 01_data_exploration.ipynb      # Dataset analysis
-│   ├── 02_visualization.ipynb         # Annotation visualization
-│   └── 03_model_testing.ipynb         # Model inference testing
-│
-├── scripts/                           # Training/inference scripts
-│   ├── train.py                       # Training script
-│   ├── evaluate.py                    # Evaluation script
-│   ├── inference.py                   # Single image inference
-│   └── prepare_dataset.py             # Dataset preparation
-│
-├── models/                            # Saved models
-│   └── checkpoints/                   # Training checkpoints
-│
-└── outputs/                           # Training outputs
-    ├── logs/                          # Training logs
-    ├── visualizations/                # Prediction visualizations
-    └── metrics/                       # Evaluation results
-```
+## Requirements
+
+* Python 3.8 or higher
+* CUDA-capable GPU (recommended for training)
+* 8GB+ RAM and 10GB+ disk space
+* Annotated graffiti dataset in YOLO format
 
 ## Installation
 
-### Prerequisites
+1. **Clone the repository**
 
-- Python 3.8 or higher
-- CUDA-capable GPU (recommended for training)
-- 8GB+ RAM
-- 10GB+ free disk space
+   ```bash
+   git clone https://github.com/yourusername/graffiti-detection-ai-model.git
+   cd graffiti-detection-ai-model
+   ```
 
-### Setup
+2. **Create virtual environment**
 
-1. Clone the repository:
-```bash
-cd /Users/pierre/Code/graffiti-detection-ai-model
-```
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On macOS/Linux
+   # or on Windows: venv\Scripts\activate
+   ```
 
-2. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On macOS/Linux
-```
+3. **Install dependencies**
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Dataset Preparation
+## Quick Start
 
-### Data Collection
+### 1. Prepare Your Dataset
 
-Collect images containing graffiti across various contexts:
-- Urban walls and buildings
-- Over-bridges and underpasses
-- Vehicles (cars, trains, buses)
-- Public infrastructure
-- Mixed scenes
-
-Aim for at least 1500+ diverse images for robust training.
-
-### Annotation
-
-Use annotation tools to label graffiti instances:
-- **LabelImg**: Desktop tool for bounding box annotation
-- **CVAT**: Web-based collaborative annotation
-- **Roboflow**: Cloud-based annotation with auto-assist
-
-Export annotations in **YOLO format**:
-```
-<class_id> <x_center> <y_center> <width> <height>
-```
-
-### Prepare Dataset
-
-Organize your dataset and create train/val/test splits:
+Collect and annotate graffiti images (aim for 1500+ diverse images):
 
 ```bash
-python scripts/prepare_dataset.py --data_dir data/raw --split 0.8 0.15 0.05
+# Organize your raw images and YOLO format labels
+python scripts/prepare_dataset.py --data-dir data/raw --output-dir data
+```
+
+**Supported Annotation Tools:**
+- **LabelImg** - Desktop tool for bounding box annotation
+- **CVAT** - Web-based collaborative annotation
+- **Roboflow** - Cloud-based annotation with AI-assist
+
+### 2. Train the Model
+
+**Basic Training:**
+```bash
+python scripts/train.py --data configs/dataset.yaml --model yolov8n --epochs 100
+```
+
+**Advanced Training:**
+```bash
+python scripts/train.py \
+    --data configs/dataset.yaml \
+    --model yolov8m \
+    --epochs 100 \
+    --batch-size 16 \
+    --device 0
+```
+
+### 3. Run Inference
+
+**Single Image:**
+```bash
+python scripts/inference.py --model models/best.pt --source image.jpg
+```
+
+**Batch Images:**
+```bash
+python scripts/inference.py --model models/best.pt --source images_folder/
+```
+
+**Real-time Webcam:**
+```bash
+python scripts/inference.py --model models/best.pt --source 0 --show
 ```
 
 ## Training
 
-### Quick Start
+The training pipeline supports multiple YOLOv8 variants with configurable parameters:
 
-Train a YOLOv8 nano model (fastest):
+| Model | Speed | Accuracy | Use Case |
+|-------|-------|----------|----------|
+| YOLOv8n | ⚡⚡⚡ | ⭐⭐ | Real-time, edge devices |
+| YOLOv8s | ⚡⚡ | ⭐⭐⭐ | Balanced performance |
+| YOLOv8m | ⚡ | ⭐⭐⭐⭐ | High accuracy needed |
+| YOLOv8l | 🐌 | ⭐⭐⭐⭐⭐ | Best accuracy |
+
+**Key Training Features:**
+- 🎨 Advanced augmentation with weather, lighting, perspective transforms
+- 📊 Progress tracking via TensorBoard
+- 💾 Automatic checkpointing
+- 🔄 Resume training from checkpoints
+- ⚡ Mixed precision (FP16) for faster training
+
+## Inference
+
+### Usage Examples
+
+**Single image detection:**
 ```bash
-python scripts/train.py --config configs/training.yaml --model yolov8n
+python scripts/inference.py --model models/best.pt --source image.jpg --conf-threshold 0.25
 ```
 
-### Advanced Training
-
-Train with custom settings:
+**Save detection crops:**
 ```bash
-python scripts/train.py \
-    --config configs/training.yaml \
-    --model yolov8m \
-    --epochs 100 \
-    --batch-size 16 \
-    --img-size 640 \
-    --device 0
+python scripts/inference.py --model models/best.pt --source image.jpg --save-crops
 ```
 
-### Training Parameters
-
-- `--model`: YOLOv8 variant (n/s/m/l/x) - larger = more accurate but slower
-- `--epochs`: Number of training epochs (default: 100)
-- `--batch-size`: Batch size (adjust based on GPU memory)
-- `--img-size`: Input image size (default: 640)
-- `--device`: GPU device (0, 1, etc.) or 'cpu'
+**Custom confidence threshold:**
+```bash
+python scripts/inference.py --model models/best.pt --source image.jpg --conf-threshold 0.5
+```
 
 ## Evaluation
 
-Evaluate model performance on test set:
+Evaluate your trained model on the test set:
 
 ```bash
 python scripts/evaluate.py --model models/best.pt --data configs/dataset.yaml
 ```
 
-### Metrics
+**Metrics Reported:**
+- mAP@0.5 - Standard object detection metric
+- mAP@0.5:0.95 - COCO-style average precision
+- Precision/Recall - Classification accuracy
+- F1-Score - Harmonic mean of precision and recall
 
-- **mAP@0.5**: Mean Average Precision at IoU threshold 0.5
-- **mAP@0.5:0.95**: mAP averaged over IoU thresholds 0.5 to 0.95
-- **Precision**: True positives / (True positives + False positives)
-- **Recall**: True positives / (True positives + False negatives)
-- **F1-Score**: Harmonic mean of precision and recall
+## Export & Deployment
 
-## Inference
+Export your model for different deployment scenarios:
 
-### Single Image Prediction
-
-```bash
-python scripts/inference.py \
-    --model models/best.pt \
-    --source path/to/image.jpg \
-    --output outputs/predictions/ \
-    --conf-threshold 0.25
-```
-
-### Batch Processing
-
-```bash
-python scripts/inference.py \
-    --model models/best.pt \
-    --source path/to/images/ \
-    --output outputs/predictions/ \
-    --save-crops
-```
-
-### Real-time Webcam
-
-```bash
-python scripts/inference.py \
-    --model models/best.pt \
-    --source 0 \
-    --show
-```
-
-## Configuration
-
-### Dataset Configuration (`configs/dataset.yaml`)
-
-Defines dataset paths and class names:
-```yaml
-path: ./data
-train: train.txt
-val: val.txt
-test: test.txt
-
-names:
-  0: graffiti
-```
-
-### Model Configuration (`configs/model.yaml`)
-
-Architecture and model-specific settings for custom modifications.
-
-### Training Configuration (`configs/training.yaml`)
-
-Hyperparameters including learning rate, optimizer, augmentation settings, etc.
-
-## Class Definitions
-
-The model supports different classification approaches:
-
-### Approach 1: Single Class (Simplest)
-- `graffiti`: Any graffiti regardless of type or context
-
-### Approach 2: Type-based Classes
-- `tag`: Simple signatures
-- `throw-up`: Bubble letters
-- `piece`: Complex artistic graffiti
-- `stencil`: Stenciled graffiti
-
-### Approach 3: Context-based Classes
-- `wall-graffiti`: Graffiti on walls
-- `building-graffiti`: Graffiti on building facades
-- `bridge-graffiti`: Graffiti on bridges/overpasses
-- `vehicle-graffiti`: Graffiti on cars, trains, etc.
-
-Choose the approach that best fits your use case and update `configs/dataset.yaml` accordingly.
-
-## Model Export
-
-### ONNX Format (for deployment)
+**ONNX (Cross-platform):**
 ```bash
 yolo export model=models/best.pt format=onnx
 ```
 
-### TensorRT (for NVIDIA GPUs)
+**TensorRT (NVIDIA GPUs):**
 ```bash
 yolo export model=models/best.pt format=engine device=0
 ```
 
-### CoreML (for iOS/macOS)
+**CoreML (iOS/macOS):**
 ```bash
 yolo export model=models/best.pt format=coreml
 ```
 
-## Performance Optimization
-
-### For Speed
-- Use YOLOv8n (nano) variant
-- Reduce input image size (e.g., 320x320)
-- Export to TensorRT for GPU inference
-- Use half-precision (FP16) inference
-
-### For Accuracy
-- Use YOLOv8l or YOLOv8x variants
-- Increase input image size (e.g., 1280x1280)
-- Train for more epochs
-- Use larger dataset with diverse examples
-
-## Troubleshooting
-
-### Out of Memory Error
-- Reduce batch size
-- Use smaller model variant
-- Reduce image size
-- Enable gradient accumulation
-
-### Poor Detection Results
-- Check annotation quality
-- Increase dataset size and diversity
-- Train for more epochs
-- Adjust confidence threshold
-- Review class balance
-
-### Slow Training
-- Ensure GPU is being used (`--device 0`)
-- Increase batch size (if memory allows)
-- Use mixed precision training
-- Enable multi-GPU training
+**Deployment Options:**
+- 🌐 REST API: Deploy with FastAPI or Flask
+- 📱 Mobile: TensorFlow Lite or CoreML
+- 🖥️ Edge: TensorRT for NVIDIA Jetson
+- ☁️ Cloud: AWS/GCP/Azure deployment
 
 ## Contributing
 
-Contributions are welcome! Areas for improvement:
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.
+
+**Areas for Improvement:**
 - Dataset expansion with diverse graffiti examples
 - Multi-class detection for graffiti types
 - Segmentation model for pixel-level detection
 - Mobile deployment optimization
 - Real-time video stream processing
 
+## Author
+
+**Pierre-Henry Soria** - Passionate software AI engineer building intelligent systems to solve real-world problems.
+
+☕️ Enjoying this project? [Buy me a coffee](https://ko-fi.com/phenry) to support more AI innovations!
+
+[![@phenrysay](https://img.shields.io/badge/x-000000?style=for-the-badge&logo=x)](https://x.com/phenrysay)
+[![pH-7](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/pH-7)
+
 ## License
 
-MIT License - See LICENSE file for details
+This project is distributed under the [MIT License](LICENSE).
 
-## Acknowledgments
+## Disclaimer
 
-- **Ultralytics YOLOv8**: State-of-the-art object detection framework
-- **PyTorch**: Deep learning framework
-- **Albumentations**: Image augmentation library
-
-## Citation
-
-If you use this project in your research, please cite:
-
-```bibtex
-@software{graffiti_detection_2026,
-  title={Graffiti Detection AI Model},
-  author={Pierre},
-  year={2026},
-  url={https://github.com/yourusername/graffiti-detection-ai-model}
-}
-```
-
-## Contact
-
-For questions, issues, or collaboration:
-- Open an issue on GitHub
-- Email: your.email@example.com
-
----
-
-**Note**: This model is designed to assist in identifying graffiti for maintenance and urban management purposes. Always respect local laws and privacy regulations when deploying computer vision systems in public spaces.
+This model is designed to assist in identifying graffiti for maintenance and urban management purposes. Always respect local laws and privacy regulations when deploying computer vision systems in public spaces.
