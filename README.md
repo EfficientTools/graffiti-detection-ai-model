@@ -200,12 +200,20 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 
 ## Author
 
-**Pierre-Henry Soria** - Passionate software AI engineer building intelligent systems to solve real-world problems.
+<div align="center">
+
+[![Pierre-Henry Soria](https://s.gravatar.com/avatar/a210fe61253c43c869d71eaed0e90149?s=200 "Pierre-Henry Soria - Software AI Engineer")](https://pierrehenry.dev)
+
+**Pierre-Henry Soria**
+
+Passionate software AI engineer building intelligent systems to solve real-world problems.
 
 ☕️ Enjoying this project? [Buy me a coffee](https://ko-fi.com/phenry) to support more AI innovations!
 
 [![@phenrysay](https://img.shields.io/badge/x-000000?style=for-the-badge&logo=x)](https://x.com/phenrysay)
 [![pH-7](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/pH-7)
+
+</div>
 
 ## License
 
