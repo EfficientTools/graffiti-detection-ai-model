@@ -1,0 +1,117 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Data
+data/raw/*
+data/images/*
+data/labels/*
+!data/raw/.gitkeep
+!data/images/.gitkeep
+!data/labels/.gitkeep
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.webp
+
+# Models
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.engine
+models/*.tflite
+models/checkpoints/*
+!models/.gitkeep
+!models/checkpoints/.gitkeep
+
+# Outputs
+outputs/logs/*
+outputs/visualizations/*
+outputs/metrics/*
+outputs/predictions/*
+!outputs/logs/.gitkeep
+!outputs/visualizations/.gitkeep
+!outputs/metrics/.gitkeep
+!outputs/predictions/.gitkeep
+
+# Training artifacts
+runs/
+wandb/
+*.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# System files
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+
+# Compiled files
+*.pyc
+*.pyo
+
+# Test coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/

@@ -1,0 +1,100 @@
+# Training configuration for graffiti detection model
+
+# Model
+model: yolov8n.pt  # Pretrained model to start from (n/s/m/l/x)
+
+# Training hyperparameters
+epochs: 100
+batch: 16  # Batch size (-1 for AutoBatch)
+imgsz: 640  # Input image size
+
+# Optimization
+optimizer: AdamW  # Options: SGD, Adam, AdamW, NAdam, RAdam, RMSProp
+lr0: 0.001  # Initial learning rate
+lrf: 0.01  # Final learning rate (lr0 * lrf)
+momentum: 0.937  # SGD momentum/Adam beta1
+weight_decay: 0.0005  # Optimizer weight decay
+
+# Learning rate scheduling
+cos_lr: True  # Use cosine learning rate scheduler
+warmup_epochs: 3.0  # Warmup epochs
+warmup_momentum: 0.8  # Warmup momentum
+warmup_bias_lr: 0.1  # Warmup bias learning rate
+
+# Data augmentation
+hsv_h: 0.015  # HSV-Hue augmentation (fraction)
+hsv_s: 0.7  # HSV-Saturation augmentation (fraction)
+hsv_v: 0.4  # HSV-Value augmentation (fraction)
+degrees: 0.0  # Image rotation (+/- deg)
+translate: 0.1  # Image translation (+/- fraction)
+scale: 0.5  # Image scale (+/- gain)
+shear: 0.0  # Image shear (+/- deg)
+perspective: 0.0  # Image perspective (+/- fraction)
+flipud: 0.0  # Vertical flip probability
+fliplr: 0.5  # Horizontal flip probability
+mosaic: 1.0  # Mosaic augmentation probability
+mixup: 0.0  # MixUp augmentation probability
+copy_paste: 0.0  # Copy-paste augmentation probability
+
+# Advanced augmentation
+blur: 0.01  # Blur augmentation probability
+erasing: 0.4  # Random erasing probability
+crop_fraction: 1.0  # Image crop fraction
+
+# Loss weights
+box: 7.5  # Box loss weight
+cls: 0.5  # Classification loss weight
+dfl: 1.5  # Distribution focal loss weight
+
+# Model architecture
+dropout: 0.0  # Dropout rate
+
+# Performance
+workers: 8  # Number of worker threads for data loading
+device: 0  # CUDA device (0, 1, ...) or 'cpu'
+amp: True  # Automatic Mixed Precision training
+deterministic: False  # Deterministic training for reproducibility
+
+# Validation
+val: True  # Validate during training
+val_interval: 1  # Validation interval (epochs)
+conf: 0.25  # Confidence threshold for validation
+iou: 0.7  # IoU threshold for NMS during validation
+max_det: 300  # Maximum detections per image
+
+# Saving
+save: True  # Save checkpoints
+save_period: -1  # Save checkpoint every x epochs (-1 to disable)
+save_dir: runs/train  # Save directory
+
+# Logging
+verbose: True  # Verbose output
+plots: True  # Generate plots
+
+# Callbacks and monitoring
+patience: 50  # Epochs to wait for improvement before early stopping (0 to disable)
+close_mosaic: 10  # Disable mosaic augmentation in final epochs
+
+# Resume training
+resume: False  # Resume from last checkpoint
+pretrained: True  # Use pretrained weights
+
+# Multi-GPU
+rect: False  # Rectangular training (better for fixed size images)
+single_cls: False  # Train as single-class dataset
+
+# Advanced options
+nms: True  # Use NMS during validation
+agnostic_nms: False  # Class-agnostic NMS
+overlap_mask: True  # Masks should overlap during training
+mask_ratio: 4  # Mask downsample ratio
+
+# Experiment tracking (optional - uncomment to enable)
+# project: graffiti-detection
+# name: experiment-1
+# exist_ok: False
+
+# W&B logging (optional - uncomment to enable)
+# wandb:
+#   entity: your-entity
+#   project: graffiti-detection

@@ -1,0 +1,50 @@
+# Dataset configuration for graffiti detection
+# YOLOv8 format
+
+# Dataset paths (relative to this config file or absolute)
+path: ../data  # Root directory
+train: train.txt  # Training images list
+val: val.txt      # Validation images list
+test: test.txt    # Test images list (optional)
+
+# Number of classes
+nc: 1
+
+# Class names
+names:
+  0: graffiti
+
+# Alternative class definitions (uncomment desired approach):
+
+# Approach 2: Type-based classification
+# nc: 4
+# names:
+#   0: tag
+#   1: throw-up
+#   2: piece
+#   3: stencil
+
+# Approach 3: Context-based classification
+# nc: 4
+# names:
+#   0: wall-graffiti
+#   1: building-graffiti
+#   2: bridge-graffiti
+#   3: vehicle-graffiti
+
+# Approach 4: Combined type and context
+# nc: 8
+# names:
+#   0: wall-tag
+#   1: wall-piece
+#   2: building-tag
+#   3: building-piece
+#   4: bridge-tag
+#   5: bridge-piece
+#   6: vehicle-tag
+#   7: vehicle-piece
+
+# Dataset statistics (update after dataset preparation)
+# train_samples: 0
+# val_samples: 0
+# test_samples: 0

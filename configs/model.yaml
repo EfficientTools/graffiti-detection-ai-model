@@ -1,0 +1,82 @@
+# YOLOv8 Model Architecture Configuration
+# This file allows customization of the YOLOv8 architecture
+
+# Model backbone configuration
+# YOLOv8n (nano) - fastest, smallest
+# YOLOv8s (small) - balanced
+# YOLOv8m (medium) - good accuracy
+# YOLOv8l (large) - high accuracy
+# YOLOv8x (xlarge) - best accuracy
+
+# Note: By default, using pretrained models from Ultralytics
+# This config is for advanced customization if needed
+
+# Anchors (YOLOv8 is anchor-free, but included for reference)
+anchors: 3
+
+# Backbone
+backbone:
+  type: CSPDarknet
+  depth_multiple: 0.33  # Model depth multiplier (n=0.33, s=0.33, m=0.67, l=1.0, x=1.0)
+  width_multiple: 0.25  # Layer channel multiplier (n=0.25, s=0.50, m=0.75, l=1.0, x=1.25)
+
+# Neck
+neck:
+  type: YOLOV8PAFPN
+  
+# Head
+head:
+  type: Detect
+  
+# Detection parameters
+detection:
+  conf_threshold: 0.25  # Confidence threshold
+  iou_threshold: 0.45   # NMS IoU threshold
+  max_det: 300          # Maximum detections per image
+  classes: null         # Filter by class (null for all classes)
+  agnostic_nms: False   # Class-agnostic NMS
+
+# Input
+input:
+  size: [640, 640]  # Input image size [height, width]
+  normalization:
+    mean: [0.0, 0.0, 0.0]
+    std: [1.0, 1.0, 1.0]
+
+# Model variants multipliers
+# Uncomment the desired variant
+
+# YOLOv8n (nano)
+variant: nano
+depth_multiple: 0.33
+width_multiple: 0.25
+
+# YOLOv8s (small)
+# variant: small
+# depth_multiple: 0.33
+# width_multiple: 0.50
+
+# YOLOv8m (medium)
+# variant: medium
+# depth_multiple: 0.67
+# width_multiple: 0.75
+
+# YOLOv8l (large)
+# variant: large
+# depth_multiple: 1.00
+# width_multiple: 1.00
+
+# YOLOv8x (xlarge)
+# variant: xlarge
+# depth_multiple: 1.00
+# width_multiple: 1.25
+
+# Custom modifications (advanced users)
+# custom_layers:
+#   - Additional custom layers can be defined here
+#   - Useful for domain-specific adaptations
+
+# Post-processing
+post_processing:
+  multi_label: False  # Multiple labels per box
+  time_limit: 30.0    # Time limit for inference (seconds)
