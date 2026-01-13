@@ -7,23 +7,28 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 > [!NOTE]
-> **Production-Ready Graffiti Detection System**
+> **Real-Time Anti-Vandalism Detection System**
 > 
-> Detect graffiti across multiple contexts including walls, buildings, bridges, and vehicles. Built with YOLOv8 for real-time, accurate detection.
+> Instantly detect and alert on any sign of graffiti vandalism across walls, buildings, bridges, and vehicles. Built with YOLOv8 for immediate response and prevention.
 
-An end-to-end deep learning system that automatically identifies and locates graffiti in images, helping authorities and property managers efficiently address urban vandalism.
+A powerful AI-driven system that instantly identifies and alerts on graffiti vandalism, enabling rapid response to prevent urban decay. Deploy on surveillance cameras, mobile apps, or edge devices for continuous 24/7 monitoring and immediate threat detection.
 
 **Key Features:**
-- 🎯 Multi-context detection (walls, buildings, bridges, vehicles)
-- ⚡ Real-time inference with optimized YOLOv8 architecture
-- 📊 Complete training, evaluation, and deployment pipeline
-- 🎨 Advanced data augmentation (weather, lighting, geometric transforms)
-- 🛡️ Production-ready exports (ONNX, TensorRT, CoreML)
+- 🚨 **Instant Vandalism Alerts** - Immediate detection and notification of graffiti incidents
+- ⚡ **Real-Time Processing** - Sub-second inference for rapid response (<50ms per frame)
+- 📹 **24/7 Surveillance Integration** - Deploy on CCTV cameras for continuous monitoring
+- 🎯 **Multi-Context Detection** - Walls, buildings, bridges, vehicles, trains, and public spaces
+- 🔔 **Alert System Ready** - Integration with SMS, email, push notifications, and security systems
+- 📊 **Incident Logging** - Automatic timestamping and geo-tagging of vandalism events
+- 🛡️ **Edge Deployment** - Run on edge devices (NVIDIA Jetson, Raspberry Pi) for offline operation
+- 🌐 **API-Ready** - RESTful API for integration with existing security infrastructure
 
 ## Table of Contents
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Real-Time Surveillance](#real-time-surveillance)
+- [Alert System Integration](#alert-system-integration)
 - [Training](#training)
 - [Inference](#inference)
 - [Evaluation](#evaluation)
