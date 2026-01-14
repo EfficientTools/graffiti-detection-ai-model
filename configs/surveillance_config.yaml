@@ -1,0 +1,172 @@
+# Real-Time Surveillance Configuration for Anti-Vandalism System
+# Optimized for immediate graffiti detection and rapid response
+
+# System Settings
+system:
+  name: "Anti-Vandalism Surveillance System"
+  version: "1.0.0"
+  mode: "production"  # Options: development, testing, production
+  
+# Detection Settings
+detection:
+  model_path: "models/best.pt"
+  confidence_threshold: 0.20  # Lower for early detection
+  inference_device: "0"  # GPU device ID or "cpu"
+  batch_processing: false  # Real-time requires frame-by-frame
+  
+  # Performance optimization
+  max_fps: 30  # Maximum frames per second to process
+  resolution:
+    width: 1280
+    height: 720
+  
+  # Detection zones (optional - focus on specific areas)
+  zones:
+    enabled: false
+    coordinates: []  # [[x1,y1,x2,y2], ...] for each zone
+
+# Alert Configuration
+alerts:
+  # Immediate alerts
+  instant_alert:
+    enabled: true
+    min_confidence: 0.25
+    cooldown_seconds: 5  # Prevent alert spam
+  
+  # Alert escalation
+  escalation:
+    enabled: true
+    level_1_threshold: 0.30  # Email notification
+    level_2_threshold: 0.50  # Email + SMS
+    level_3_threshold: 0.70  # Email + SMS + Security dispatch
+  
+  # Notification channels
+  channels:
+    email: true
+    sms: true
+    push_notification: true
+    webhook: true
+    discord: false
+    slack: false
+
+# Camera Management
+cameras:
+  auto_reconnect: true
+  reconnect_delay: 5  # Seconds
+  health_check_interval: 30  # Seconds
+  
+  # Recording settings
+  recording:
+    enabled: true
+    save_all_detections: true
+    retention_days: 30
+    video_codec: "mp4v"
+    
+  # Preprocessing
+  preprocessing:
+    enabled: true
+    brightness_adjustment: true
+    contrast_enhancement: true
+    noise_reduction: false
+
+# Incident Logging
+logging:
+  enabled: true
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  
+  # Log outputs
+  console: true
+  file: true
+  database: false
+  
+  # Incident details
+  include_metadata:
+    timestamp: true
+    camera_id: true
+    location: true
+    confidence_score: true
+    image_snapshot: true
+    weather_conditions: false
+
+# Response Actions
+automated_response:
+  enabled: true
+  
+  # Immediate actions
+  actions:
+    save_video_clip: true  # Save 30s before and after detection
+    trigger_alarm: false
+    activate_floodlights: false
+    notify_security: true
+    dispatch_patrol: false  # High-confidence only
+    
+  # Integration with security systems
+  integration:
+    access_control: false
+    alarm_system: false
+    building_management: false
+
+# Analytics & Reporting
+analytics:
+  enabled: true
+  
+  # Real-time dashboard
+  dashboard:
+    enabled: true
+    update_interval: 1  # Seconds
+    metrics:
+      - detection_count
+      - average_confidence
+      - camera_status
+      - alert_history
+      - hotspot_map
+  
+  # Periodic reports
+  reports:
+    daily_summary: true
+    weekly_report: true
+    monthly_analytics: true
+    send_to_emails: []
+
+# Performance Monitoring
+monitoring:
+  enabled: true
+  
+  metrics:
+    fps: true
+    latency: true
+    cpu_usage: true
+    gpu_usage: true
+    memory_usage: true
+    
+  # Alerts for system issues
+  system_alerts:
+    low_fps_threshold: 15
+    high_latency_threshold: 200  # Milliseconds
+    high_cpu_threshold: 90  # Percentage
+
+# Backup & Redundancy
+backup:
+  enabled: true
+  backup_server: null
+  failover_automatic: true
+  
+# Compliance & Privacy
+compliance:
+  gdpr_compliant: true
+  retain_personal_data: false
+  anonymize_faces: true
+  data_encryption: true
+  audit_trail: true
+
+# Maintenance
+maintenance:
+  auto_cleanup:
+    enabled: true
+    old_logs_days: 90
+    old_videos_days: 30
+    
+  scheduled_maintenance:
+    enabled: false
+    time: "02:00"  # 2 AM
+    duration_minutes: 30

@@ -1,0 +1,46 @@
+{
+  "camera_1": {
+    "name": "Building A - North Wall",
+    "source": "rtsp://admin:password@192.168.1.101:554/stream",
+    "conf_threshold": 0.3,
+    "location": {
+      "lat": 40.7128,
+      "lon": -74.0060,
+      "address": "123 Main St, Building A"
+    },
+    "enabled": true
+  },
+  "camera_2": {
+    "name": "Parking Garage - Level 1",
+    "source": "rtsp://admin:password@192.168.1.102:554/stream",
+    "conf_threshold": 0.35,
+    "location": {
+      "lat": 40.7130,
+      "lon": -74.0062,
+      "address": "Parking Structure, Level 1"
+    },
+    "enabled": true
+  },
+  "camera_3": {
+    "name": "Bridge Underpass",
+    "source": "rtsp://admin:password@192.168.1.103:554/stream",
+    "conf_threshold": 0.25,
+    "location": {
+      "lat": 40.7125,
+      "lon": -74.0058,
+      "address": "Highway Bridge Underpass"
+    },
+    "enabled": true
+  },
+  "camera_4": {
+    "name": "USB Camera (Testing)",
+    "source": 0,
+    "conf_threshold": 0.4,
+    "location": {
+      "lat": 0,
+      "lon": 0,
+      "address": "Local Testing Camera"
+    },
+    "enabled": false
+  }
+}
