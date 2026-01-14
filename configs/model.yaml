@@ -28,13 +28,19 @@ neck:
 head:
   type: Detect
   
-# Detection parameters
+# Detection parameters for immediate vandalism detection
 detection:
-  conf_threshold: 0.25  # Confidence threshold
-  iou_threshold: 0.45   # NMS IoU threshold
-  max_det: 300          # Maximum detections per image
+  conf_threshold: 0.20  # Lower threshold for early detection
+  iou_threshold: 0.40   # NMS IoU threshold (optimized for overlapping tags)
+  max_det: 500          # Maximum detections per image (increased for dense areas)
   classes: null         # Filter by class (null for all classes)
   agnostic_nms: False   # Class-agnostic NMS
+  
+# Real-time surveillance optimization
+real_time:
+  max_frame_skip: 1     # Process every frame for immediate detection
+  alert_cooldown: 3.0   # Seconds between alerts (prevent spam)
+  save_detections: True # Auto-save all detection frames
 
 # Input
 input:

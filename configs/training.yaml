@@ -1,12 +1,15 @@
-# Training configuration for graffiti detection model
+# Training configuration for real-time graffiti vandalism detection
 
 # Model
-model: yolov8n.pt  # Pretrained model to start from (n/s/m/l/x)
+model: yolov8n.pt  # Pretrained model to start from (n/s/m/l/x - nano for fastest real-time)
 
-# Training hyperparameters
-epochs: 100
+# Training hyperparameters optimized for vandalism detection
+epochs: 150  # Increased for better generalization
 batch: 16  # Batch size (-1 for AutoBatch)
-imgsz: 640  # Input image size
+imgsz: 640  # Input image size (640 optimal for speed/accuracy balance)
+
+# Anti-vandalism focus
+train_mode: anti_vandalism  # Optimized for early/small graffiti detection
 
 # Optimization
 optimizer: AdamW  # Options: SGD, Adam, AdamW, NAdam, RAdam, RMSProp

@@ -1,5 +1,5 @@
-# Dataset configuration for graffiti detection
-# YOLOv8 format
+# Dataset configuration for real-time graffiti vandalism detection
+# YOLOv8 format - Optimized for immediate threat detection
 
 # Dataset paths (relative to this config file or absolute)
 path: ../data  # Root directory
@@ -13,6 +13,13 @@ nc: 1
 # Class names
 names:
   0: graffiti
+
+# Detection priorities for real-time alerts
+priority_contexts:
+  - public_property    # High priority: schools, government buildings
+  - transportation     # High priority: trains, buses, bridges
+  - private_property   # Medium priority: businesses, residential
+  - artistic          # Low priority: authorized murals
 
 # Alternative class definitions (uncomment desired approach):
 
