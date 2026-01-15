@@ -116,6 +116,101 @@ python scripts/inference.py --model models/best.pt --source images_folder/
 python scripts/inference.py --model models/best.pt --source 0 --show
 ```
 
+## Real-Time Surveillance
+
+### Deploy on CCTV/IP Cameras
+
+Monitor live camera feeds for immediate graffiti detection:
+
+**RTSP Stream Monitoring:**
+```bash
+python scripts/inference.py \
+    --model models/best.pt \
+    --source rtsp://username:password@camera-ip:554/stream \
+    --conf-threshold 0.3 \
+    --save-detections
+```
+
+**Multiple Camera Monitoring:**
+```bash
+# Monitor multiple cameras simultaneously
+python scripts/multi_camera_surveillance.py \
+    --model models/best.pt \
+    --cameras cameras_config.json \
+    --alert-webhook https://your-alert-system.com/webhook
+```
+
+**Edge Device Deployment (NVIDIA Jetson):**
+```bash
+# Export to TensorRT for edge deployment
+yolo export model=models/best.pt format=engine device=0
+
+# Run optimized inference on Jetson
+python scripts/inference.py \
+    --model models/best.engine \
+    --source /dev/video0 \
+    --conf-threshold 0.25
+```
+
+## Alert System Integration
+
+### Immediate Notification Setup
+
+Configure instant alerts when graffiti is detected:
+
+**Email Alerts:**
+```bash
+python scripts/inference.py \
+    --model models/best.pt \
+    --source rtsp://camera-ip/stream \
+    --alert-email security@company.com \
+    --smtp-config smtp_settings.json
+```
+
+**SMS/Push Notifications:**
+```bash
+python scripts/inference.py \
+    --model models/best.pt \
+    --source 0 \
+    --alert-sms +1234567890 \
+    --alert-service twilio \
+    --min-confidence 0.4
+```
+
+**Webhook Integration:**
+```bash
+# Send detection events to your security system
+python scripts/inference.py \
+    --model models/best.pt \
+    --source rtsp://camera-ip/stream \
+    --webhook-url https://security-api.com/graffiti-alert \
+    --include-image \
+    --geo-tag
+```
+
+**Discord/Slack Alerts:**
+```python
+# Example: Discord webhook integration
+from detection_alerts import DiscordAlert
+
+alert = DiscordAlert(webhook_url="YOUR_DISCORD_WEBHOOK")
+alert.send_graffiti_detection(
+    image_path="detections/graffiti_001.jpg",
+    confidence=0.87,
+    location="Building A, Camera 3",
+    timestamp="2026-01-02 14:23:15"
+)
+```
+
+### Automated Response System
+
+**Integration with Security Systems:**
+- Trigger alarms when graffiti detected
+- Activate additional cameras to capture perpetrators
+- Log incidents with timestamp and location
+- Generate daily/weekly vandalism reports
+- Alert nearest security personnel via mobile app
+
 ## Training
 
 The training pipeline supports multiple YOLOv8 variants with configurable parameters:
@@ -186,22 +281,45 @@ yolo export model=models/best.pt format=engine device=0
 yolo export model=models/best.pt format=coreml
 ```
 
-**Deployment Options:**
-- 🌐 REST API: Deploy with FastAPI or Flask
-- 📱 Mobile: TensorFlow Lite or CoreML
-- 🖥️ Edge: TensorRT for NVIDIA Jetson
-- ☁️ Cloud: AWS/GCP/Azure deployment
+**Deployment Scenarios:**
+
+| Deployment | Use Case | Response Time | Best For |
+|------------|----------|---------------|----------|
+| 🌐 **REST API** | Centralized monitoring hub | ~100ms | Multiple camera integration |
+| 📱 **Mobile App** | Field inspection & reporting | ~50ms | Property managers, inspectors |
+| 🖥️ **Edge (Jetson)** | Standalone surveillance | <30ms | 24/7 real-time monitoring |
+| ☁️ **Cloud (AWS/GCP)** | Large-scale city deployment | ~150ms | City-wide surveillance networks |
+| 🏢 **On-Premise Server** | Private security systems | ~80ms | Corporate/institutional security |
+
+**Quick Deploy Examples:**
+
+```bash
+# Deploy as REST API service
+uvicorn api.graffiti_detector:app --host 0.0.0.0 --port 8000
+
+# Docker deployment with auto-restart
+docker run -d --restart always \
+  --gpus all \
+  -p 8000:8000 \
+  graffiti-detector:latest
+
+# Kubernetes deployment for high availability
+kubectl apply -f kubernetes/graffiti-detection-deployment.yaml
+```
 
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
 
-**Areas for Improvement:**
-- Dataset expansion with diverse graffiti examples
-- Multi-class detection for graffiti types
-- Segmentation model for pixel-level detection
-- Mobile deployment optimization
-- Real-time video stream processing
+**Areas for Contribution:**
+- 🎯 Dataset expansion with diverse vandalism examples (tags, murals, scratchiti)
+- 🔍 Multi-class detection for graffiti types and severity levels
+- 🎨 Segmentation model for pixel-level vandalism mapping
+- 📱 Mobile deployment optimization for field inspectors
+- 🤖 Automated perpetrator tracking across multiple cameras
+- 📊 Vandalism hotspot analytics and predictive modeling
+- 🔔 Advanced alert filtering to reduce false positives
+- 🌐 Multi-language support for international deployment
 
 ## Author
 
