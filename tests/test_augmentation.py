@@ -9,7 +9,7 @@ import cv2
 from src.data.augmentation import (
     get_training_augmentation,
     get_validation_augmentation,
-    get_inference_augmentation,
+    get_inference_transform,
     AUGMENTATION_PRESETS
 )
 
@@ -57,7 +57,7 @@ class TestAugmentation(unittest.TestCase):
     
     def test_inference_augmentation(self):
         """Test inference augmentation pipeline"""
-        transform = get_inference_augmentation(img_size=640)
+        transform = get_inference_transform(img_size=640)
         
         self.assertIsNotNone(transform)
         
