@@ -41,6 +41,18 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+Install directly from pip (after the first PyPI release):
+
+```bash
+pip install graffiti-detection-ai-model
+```
+
+Quick import example:
+
+```python
+from src.evaluation.metrics import calculate_iou
+```
+
 ## Quick Start
 
 ### 1. Prepare dataset
