@@ -157,7 +157,7 @@ Passionate software AI engineer building intelligent systems to solve real-world
 
 
 [![BlueSky](https://img.shields.io/badge/BlueSky-000000?style=for-the-badge&logo=bluesky&logoColor=white "Follow Me on BlueSky")](https://bsky.app/profile/pierrehenry.dev)
-[![@phenrysay](https://img.shields.io/badge/x-000000?style=for-the-badge&logo=x&logoColor=white "Follow Me on X (Twitter)")](https://x.com/phenrysay)
+[![@phenrysay](https://img.shields.io/badge/x-000000?style=for-the-badge&logo=x&logoColor=white "Follow Me on X")](https://x.com/phenrysay)
 [![pH-7](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white "Follow Me on GitHub")](https://github.com/pH-7)
 
 </div>
