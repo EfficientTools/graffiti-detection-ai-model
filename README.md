@@ -156,9 +156,9 @@ Passionate software AI engineer building intelligent systems to solve real-world
 ☕️ Enjoying this project? [Buy me a coffee](https://ko-fi.com/phenry) to support more AI innovations!
 
 
-[![BlueSky](https://img.shields.io/badge/BlueSky-000000?style=for-the-badge&logo=bluesky&logoColor=white "Follow Me on BlueSky")](https://bsky.app/profile/pierrehenry.dev)
-[![@phenrysay](https://img.shields.io/badge/x-000000?style=for-the-badge&logo=x&logoColor=white "Follow Me on X")](https://x.com/phenrysay)
-[![pH-7](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white "Follow Me on GitHub")](https://github.com/pH-7)
+[![BlueSky](https://img.shields.io/badge/BlueSky-000000?style=for-the-badge&logo=bluesky&logoColor=white)](https://bsky.app/profile/pierrehenry.dev "Follow Me on BlueSky")
+[![@phenrysay](https://img.shields.io/badge/x-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/phenrysay "Follow Me on X")
+[![pH-7](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/pH-7 "Follow Me on GitHub")
 
 </div>
 
