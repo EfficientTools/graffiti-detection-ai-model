@@ -33,8 +33,13 @@ def calculate_iou(box1: np.ndarray, box2: np.ndarray) -> float:
 
 
 def calculate_ap(
-    predictions: List[Tuple[float, bool]],
-    num_gt: int
+    predictions,
+    num_gt=None,
+    pred_labels=None,
+    gt_boxes=None,
+    gt_labels=None,
+    iou_threshold: float = 0.5,
+    class_id: int = 0
 ) -> float:
     """
     Calculate Average Precision for a single class.
@@ -46,35 +51,64 @@ def calculate_ap(
     Returns:
         Average Precision value
     """
+    # New-style API:
+    # calculate_ap(pred_boxes, pred_scores, pred_labels, gt_boxes, gt_labels, iou_threshold=0.5)
+    if num_gt is not None and not np.isscalar(num_gt):
+        pred_boxes = np.asarray(predictions)
+        pred_scores = np.asarray(num_gt)
+        pred_labels_arr = np.asarray(pred_labels)
+        gt_boxes_arr = np.asarray(gt_boxes)
+        gt_labels_arr = np.asarray(gt_labels)
+
+        pred_mask = pred_labels_arr == class_id
+        gt_mask = gt_labels_arr == class_id
+        filtered_preds = list(zip(pred_boxes[pred_mask], pred_scores[pred_mask]))
+        filtered_gts = list(gt_boxes_arr[gt_mask])
+
+        matched_gts = set()
+        pred_results = []
+        for pred_box, conf in sorted(filtered_preds, key=lambda x: x[1], reverse=True):
+            best_iou = 0.0
+            best_gt_idx = -1
+            for gt_idx, gt_box in enumerate(filtered_gts):
+                if gt_idx in matched_gts:
+                    continue
+                iou = calculate_iou(pred_box, gt_box)
+                if iou > best_iou:
+                    best_iou = iou
+                    best_gt_idx = gt_idx
+            is_tp = best_iou >= iou_threshold and best_gt_idx != -1
+            if is_tp:
+                matched_gts.add(best_gt_idx)
+            pred_results.append((float(conf), is_tp))
+
+        return calculate_ap(pred_results, len(filtered_gts))
+
+    # Legacy/internal API:
+    # calculate_ap(predictions=[(confidence, is_tp), ...], num_gt=int)
+    predictions = predictions or []
+    num_gt = int(num_gt or 0)
     if num_gt == 0:
         return 0.0
-    
-    # Sort by confidence (descending)
+
     predictions = sorted(predictions, key=lambda x: x[0], reverse=True)
-    
-    tp = np.array([int(p[1]) for p in predictions])
+    tp = np.array([int(p[1]) for p in predictions], dtype=np.int32)
     fp = 1 - tp
-    
+
     tp_cumsum = np.cumsum(tp)
     fp_cumsum = np.cumsum(fp)
-    
+
     recalls = tp_cumsum / num_gt
-    precisions = tp_cumsum / (tp_cumsum + fp_cumsum)
-    
-    # Add sentinel values
+    precisions = tp_cumsum / (tp_cumsum + fp_cumsum + 1e-16)
+
     recalls = np.concatenate(([0.0], recalls, [1.0]))
     precisions = np.concatenate(([1.0], precisions, [0.0]))
-    
-    # Compute AP using 11-point interpolation
+
     ap = 0.0
     for t in np.arange(0.0, 1.1, 0.1):
-        if np.sum(recalls >= t) == 0:
-            p = 0
-        else:
-            p = np.max(precisions[recalls >= t])
+        p = np.max(precisions[recalls >= t]) if np.any(recalls >= t) else 0.0
         ap += p / 11.0
-    
-    return ap
+    return float(np.clip(ap, 0.0, 1.0))
 
 
 def calculate_map(
@@ -277,13 +311,52 @@ class DetectionMetrics:
         for p_boxes, p_scores, p_labels, g_boxes, g_labels in zip(
             pred_boxes, pred_scores, pred_labels, gt_boxes, gt_labels
         ):
-            # Add to class-wise storage
-            for box, score, label in zip(p_boxes, p_scores, p_labels):
-                self.predictions[label].append((box, score))
-            
-            for box, label in zip(g_boxes, g_labels):
-                self.ground_truths[label].append(box)
-    
+            self.add_predictions(p_boxes, p_scores, p_labels, g_boxes, g_labels)
+
+    def add_predictions(
+        self,
+        pred_boxes: np.ndarray,
+        pred_scores: np.ndarray,
+        pred_labels: np.ndarray,
+        gt_boxes: np.ndarray,
+        gt_labels: np.ndarray
+    ):
+        """Backward-compatible API used in tests."""
+        for box, score, label in zip(pred_boxes, pred_scores, pred_labels):
+            label_int = int(label)
+            self.predictions[label_int].append((np.asarray(box), float(score)))
+
+        for box, label in zip(gt_boxes, gt_labels):
+            label_int = int(label)
+            self.ground_truths[label_int].append(np.asarray(box))
+
+        # Update aggregate precision/recall counters.
+        matched_gts = set()
+        for box, score, label in sorted(
+            zip(pred_boxes, pred_scores, pred_labels),
+            key=lambda x: x[1],
+            reverse=True
+        ):
+            label_int = int(label)
+            gt_indices = [i for i, l in enumerate(gt_labels) if int(l) == label_int]
+            best_iou = 0.0
+            best_gt_idx = -1
+            for i in gt_indices:
+                if i in matched_gts:
+                    continue
+                iou = calculate_iou(np.asarray(box), np.asarray(gt_boxes[i]))
+                if iou > best_iou:
+                    best_iou = iou
+                    best_gt_idx = i
+
+            if best_iou >= self.iou_threshold and best_gt_idx != -1:
+                self.tp += 1
+                matched_gts.add(best_gt_idx)
+            else:
+                self.fp += 1
+
+        self.fn += max(0, len(gt_boxes) - len(matched_gts))
+
     def compute_metrics(self) -> Dict[str, float]:
         """
         Compute all metrics.
@@ -299,8 +372,12 @@ class DetectionMetrics:
             self.num_classes
         )
         
+        precision, recall, f1_score = calculate_precision_recall_f1(self.tp, self.fp, self.fn)
         metrics = {
             'mAP': mAP,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1_score,
         }
         
         # Add per-class APs
@@ -308,3 +385,7 @@ class DetectionMetrics:
             metrics[f'AP_class_{class_id}'] = ap
         
         return metrics
+
+    def compute(self) -> Dict[str, float]:
+        """Backward-compatible alias used in tests."""
+        return self.compute_metrics()

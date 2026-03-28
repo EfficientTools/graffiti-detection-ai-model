@@ -88,7 +88,7 @@ def get_training_augmentation(
                 drop_color=(200, 200, 200),
                 blur_value=5,
                 brightness_coefficient=0.7,
-                rain_type=None,
+                rain_type="default",
                 p=1.0
             ),
             A.RandomFog(fog_coef_lower=0.1, fog_coef_upper=0.3, p=1.0),
@@ -220,18 +220,27 @@ def get_inference_transform(img_size: int = 640) -> A.Compose:
 # Preset configurations
 AUGMENTATION_PRESETS = {
     'light': {
+        'hsv': 0.1,
+        'blur': 3,
+        'noise': (5.0, 25.0),
         'brightness_limit': 0.1,
         'contrast_limit': 0.1,
         'blur_limit': 3,
         'noise_var_limit': (5.0, 25.0)
     },
     'medium': {
+        'hsv': 0.2,
+        'blur': 7,
+        'noise': (10.0, 50.0),
         'brightness_limit': 0.2,
         'contrast_limit': 0.2,
         'blur_limit': 7,
         'noise_var_limit': (10.0, 50.0)
     },
     'heavy': {
+        'hsv': 0.3,
+        'blur': 11,
+        'noise': (20.0, 80.0),
         'brightness_limit': 0.3,
         'contrast_limit': 0.3,
         'blur_limit': 11,
@@ -254,5 +263,9 @@ def get_augmentation_by_preset(preset: str = 'medium', img_size: int = 640) -> A
     if preset not in AUGMENTATION_PRESETS:
         raise ValueError(f"Unknown preset: {preset}. Choose from {list(AUGMENTATION_PRESETS.keys())}")
     
-    params = AUGMENTATION_PRESETS[preset]
+    params = {
+        k: v
+        for k, v in AUGMENTATION_PRESETS[preset].items()
+        if k in {"brightness_limit", "contrast_limit", "blur_limit", "noise_var_limit"}
+    }
     return get_training_augmentation(img_size=img_size, **params)

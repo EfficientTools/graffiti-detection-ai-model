@@ -35,13 +35,19 @@ class GraffitiDataset(Dataset):
         image_paths: List[str],
         label_paths: Optional[List[str]] = None,
         img_size: Tuple[int, int] = (640, 640),
+        augment: Optional[bool] = None,
         augmentation=None,
         preprocessing=None,
         return_labels: bool = True
     ):
         self.image_paths = image_paths
         self.label_paths = label_paths
-        self.img_size = img_size
+        if isinstance(img_size, int):
+            self.img_size = (img_size, img_size)
+        else:
+            self.img_size = img_size
+        self.legacy_output = augment is not None
+        self.augment = bool(augment) if augment is not None else bool(augmentation)
         self.augmentation = augmentation
         self.preprocessing = preprocessing
         self.return_labels = return_labels
@@ -85,7 +91,7 @@ class GraffitiDataset(Dataset):
             labels = self._load_yolo_labels(label_path)
         
         # Apply augmentation
-        if self.augmentation is not None and labels is not None:
+        if self.augmentation is not None and self.augment and labels is not None:
             # Convert labels for albumentations
             # From YOLO format (normalized) to pixel coordinates
             h, w = image.shape[:2]
@@ -133,6 +139,10 @@ class GraffitiDataset(Dataset):
         image = cv2.resize(image, self.img_size, interpolation=cv2.INTER_LINEAR)
         
         # Apply preprocessing
+        if self.legacy_output:
+            legacy_labels = labels if labels is not None else np.zeros((0, 5))
+            return image, legacy_labels
+
         if self.preprocessing is not None:
             image = self.preprocessing(image)
         else:

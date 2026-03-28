@@ -250,7 +250,13 @@ class IncidentLogger:
         avg_confidence = cursor.fetchone()[0] or 0.0
         
         # High confidence incidents
-        cursor.execute(f"SELECT COUNT(*) FROM incidents {time_filter} WHERE confidence >= 0.7")
+        if time_filter:
+            high_confidence_query = (
+                f"SELECT COUNT(*) FROM incidents {time_filter} AND confidence >= 0.7"
+            )
+        else:
+            high_confidence_query = "SELECT COUNT(*) FROM incidents WHERE confidence >= 0.7"
+        cursor.execute(high_confidence_query)
         high_confidence = cursor.fetchone()[0]
         
         conn.close()

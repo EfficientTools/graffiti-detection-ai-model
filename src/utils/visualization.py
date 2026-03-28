@@ -45,12 +45,19 @@ def draw_boxes(
         Image with drawn boxes
     """
     img = image.copy()
-    
+
+    # Backward compatibility: some call sites pass (scores, labels).
+    if labels is not None and scores is not None:
+        labels_arr = np.asarray(labels)
+        scores_arr = np.asarray(scores)
+        if np.issubdtype(labels_arr.dtype, np.floating) and np.issubdtype(scores_arr.dtype, np.integer):
+            labels, scores = scores, labels
+
     for i, box in enumerate(boxes):
         x1, y1, x2, y2 = map(int, box[:4])
         
         # Get class label and score
-        label = labels[i] if labels is not None else 0
+        label = int(labels[i]) if labels is not None else 0
         score = scores[i] if scores is not None else None
         
         # Get color for this class
@@ -328,6 +335,12 @@ def save_detection_crops(
     Returns:
         List of paths to saved crops
     """
+    # Backward compatibility: some call sites pass (image, boxes, scores, output_dir).
+    if isinstance(scores, (str, Path)):
+        output_dir = str(scores)
+        scores = labels
+        labels = None
+
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     
     saved_paths = []
@@ -339,7 +352,7 @@ def save_detection_crops(
         crop = image[y1:y2, x1:x2]
         
         # Generate filename
-        label = labels[i] if labels is not None else 0
+        label = int(labels[i]) if labels is not None else 0
         score = scores[i] if scores is not None else 0
         filename = f"{image_name}_crop_{i}_class{label}_conf{score:.2f}.jpg"
         save_path = Path(output_dir) / filename

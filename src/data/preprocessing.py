@@ -11,7 +11,7 @@ def letterbox(
     img: np.ndarray,
     new_shape: Tuple[int, int] = (640, 640),
     color: Tuple[int, int, int] = (114, 114, 114),
-    auto: bool = True,
+    auto: bool = False,
     scale_fill: bool = False,
     scaleup: bool = True,
     stride: int = 32
@@ -111,7 +111,8 @@ def denormalize_image(img: np.ndarray, mean: Optional[Tuple] = None, std: Option
 def preprocess_image(
     img: np.ndarray,
     target_size: Tuple[int, int] = (640, 640),
-    normalize: bool = True
+    normalize: bool = True,
+    return_metadata: bool = False
 ) -> Tuple[np.ndarray, dict]:
     """
     Complete preprocessing pipeline for inference.
@@ -149,14 +150,16 @@ def preprocess_image(
         'padding': padding
     }
     
-    return img, metadata
+    if return_metadata:
+        return img, metadata
+    return img
 
 
 def postprocess_boxes(
     boxes: np.ndarray,
     original_shape: Tuple[int, int],
-    ratio: Tuple[float, float],
-    padding: Tuple[float, float]
+    ratio: Optional[Tuple[float, float]] = None,
+    padding: Tuple[float, float] = (0.0, 0.0)
 ) -> np.ndarray:
     """
     Convert boxes back to original image coordinates.
@@ -170,7 +173,21 @@ def postprocess_boxes(
     Returns:
         Boxes in original image coordinates
     """
-    boxes = boxes.copy()
+    boxes = boxes.copy().astype(np.float32)
+
+    # Backward compatibility: older call style passed (img_shape, orig_shape)
+    # as (original_shape, ratio). Detect shape tuple and compute resize ratio.
+    if ratio is not None and ratio[0] > 1 and ratio[1] > 1:
+        resized_shape = original_shape
+        original_shape = ratio
+        ratio = (
+            resized_shape[1] / max(float(original_shape[1]), 1.0),
+            resized_shape[0] / max(float(original_shape[0]), 1.0),
+        )
+        padding = (0.0, 0.0)
+
+    if ratio is None:
+        ratio = (1.0, 1.0)
     
     # Remove padding
     boxes[:, [0, 2]] -= padding[0]  # x padding
