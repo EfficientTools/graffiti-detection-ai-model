@@ -245,8 +245,143 @@ AUGMENTATION_PRESETS = {
         'contrast_limit': 0.3,
         'blur_limit': 11,
         'noise_var_limit': (20.0, 80.0)
+    },
+    'street': {
+        'hsv': 0.25,
+        'blur': 9,
+        'noise': (15.0, 60.0),
+        'brightness_limit': 0.35,
+        'contrast_limit': 0.35,
+        'blur_limit': 9,
+        'noise_var_limit': (15.0, 60.0)
     }
 }
+
+
+def get_street_scene_augmentation(img_size: int = 640) -> A.Compose:
+    """
+    Get augmentation pipeline optimised for public street scenarios.
+
+    Covers typical urban conditions:
+    - varying sunlight, shadows from buildings, street furniture occlusion
+    - rain, fog, and mixed lighting (day/night)
+    - wide-angle camera distortions and motion blur
+    - graffiti viewed from different distances and angles
+
+    Args:
+        img_size: Target image size
+
+    Returns:
+        Albumentations composition pipeline
+    """
+    street_transform = A.Compose([
+        # Resize
+        A.LongestMaxSize(max_size=img_size, p=1.0),
+        A.PadIfNeeded(
+            min_height=img_size,
+            min_width=img_size,
+            border_mode=0,
+            value=(114, 114, 114),
+            p=1.0
+        ),
+
+        # Street-specific geometric transforms
+        A.HorizontalFlip(p=0.5),
+        A.ShiftScaleRotate(
+            shift_limit=0.15,
+            scale_limit=0.3,
+            rotate_limit=10,
+            border_mode=0,
+            value=(114, 114, 114),
+            p=0.6
+        ),
+        A.Perspective(scale=(0.05, 0.12), p=0.4),
+
+        # Varying urban lighting conditions
+        A.OneOf([
+            A.RandomBrightnessContrast(
+                brightness_limit=0.35,
+                contrast_limit=0.35,
+                p=1.0
+            ),
+            A.HueSaturationValue(
+                hue_shift_limit=25,
+                sat_shift_limit=40,
+                val_shift_limit=30,
+                p=1.0
+            ),
+            A.RandomGamma(gamma_limit=(60, 140), p=1.0),
+            A.CLAHE(clip_limit=4.0, tile_grid_size=(8, 8), p=1.0),
+        ], p=0.7),
+
+        # Dynamic range / exposure simulation (night-time / strong sunlight)
+        A.RandomToneCurve(scale=0.2, p=0.2),
+
+        # Shadows cast by buildings and street furniture
+        A.RandomShadow(
+            shadow_roi=(0, 0.3, 1, 1),
+            num_shadows_lower=1,
+            num_shadows_upper=3,
+            shadow_dimension=6,
+            p=0.4
+        ),
+
+        # Weather conditions common on streets
+        A.OneOf([
+            A.RandomRain(
+                slant_lower=-10,
+                slant_upper=10,
+                drop_length=20,
+                drop_width=1,
+                drop_color=(200, 200, 200),
+                blur_value=5,
+                brightness_coefficient=0.7,
+                rain_type="default",
+                p=1.0
+            ),
+            A.RandomFog(fog_coef_lower=0.15, fog_coef_upper=0.45, p=1.0),
+            A.RandomSunFlare(
+                flare_roi=(0, 0, 1, 0.5),
+                angle_lower=0.0,
+                angle_upper=1.0,
+                num_flare_circles_lower=3,
+                num_flare_circles_upper=6,
+                src_radius=200,
+                p=1.0
+            ),
+        ], p=0.35),
+
+        # Camera quality degradations
+        A.OneOf([
+            A.MotionBlur(blur_limit=9, p=1.0),
+            A.Blur(blur_limit=7, p=1.0),
+            A.GaussNoise(var_limit=(15.0, 60.0), p=1.0),
+            A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.6), p=1.0),
+        ], p=0.35),
+
+        # Compression / low-quality CCTV feed simulation
+        A.ImageCompression(quality_lower=50, quality_upper=95, p=0.3),
+
+        # Partial occlusion (poles, fences, passing objects)
+        A.CoarseDropout(
+            max_holes=10,
+            max_height=48,
+            max_width=48,
+            min_holes=1,
+            min_height=12,
+            min_width=12,
+            fill_value=0,
+            p=0.35
+        ),
+
+    ], bbox_params=A.BboxParams(
+        format='yolo',
+        min_area=0,
+        min_visibility=0.15,
+        label_fields=['class_labels']
+    ))
+
+    return street_transform
 
 
 def get_augmentation_by_preset(preset: str = 'medium', img_size: int = 640) -> A.Compose:
@@ -262,7 +397,11 @@ def get_augmentation_by_preset(preset: str = 'medium', img_size: int = 640) -> A
     """
     if preset not in AUGMENTATION_PRESETS:
         raise ValueError(f"Unknown preset: {preset}. Choose from {list(AUGMENTATION_PRESETS.keys())}")
-    
+
+    # The 'street' preset uses a dedicated pipeline with urban-specific transforms
+    if preset == 'street':
+        return get_street_scene_augmentation(img_size=img_size)
+
     params = {
         k: v
         for k, v in AUGMENTATION_PRESETS[preset].items()

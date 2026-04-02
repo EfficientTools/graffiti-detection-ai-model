@@ -262,3 +262,90 @@ def apply_clahe(img: np.ndarray, clip_limit: float = 2.0, tile_size: Tuple[int, 
         img = clahe.apply(img)
     
     return img
+
+
+# ---------------------------------------------------------------------------
+# Street-scene specific preprocessing helpers
+# ---------------------------------------------------------------------------
+
+def preprocess_street_scene(
+    img: np.ndarray,
+    target_size: Tuple[int, int] = (640, 640),
+    enhance_contrast: bool = True,
+    denoise: bool = True,
+    normalize: bool = True,
+) -> np.ndarray:
+    """
+    End-to-end preprocessing tailored for public street / CCTV imagery.
+
+    Pipeline:
+    1. Optional denoising (handles noisy night-time feeds)
+    2. Optional CLAHE contrast enhancement (handles harsh sun / shadow)
+    3. Letterbox resize to target_size
+    4. Normalize to [0, 1] and convert to CHW with batch dimension
+
+    Args:
+        img: Input image (H, W, C) in BGR format
+        target_size: Target size (height, width)
+        enhance_contrast: Apply CLAHE contrast enhancement
+        denoise: Apply fast non-local-means denoising
+        normalize: Normalize to [0, 1]
+
+    Returns:
+        Preprocessed image (1, C, H, W) as float32
+    """
+    # Convert BGR -> RGB once at the start
+    if len(img.shape) == 3 and img.shape[2] == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    if denoise:
+        img = cv2.fastNlMeansDenoisingColored(img, None, 6, 6, 7, 21)
+
+    if enhance_contrast:
+        img = apply_clahe(img, clip_limit=3.0, tile_size=(8, 8))
+
+    # Letterbox resize
+    img, _, _ = letterbox(img, new_shape=target_size, auto=False)
+
+    if normalize:
+        img = img.astype(np.float32) / 255.0
+
+    # HWC -> CHW -> (1, C, H, W)
+    img = np.transpose(img, (2, 0, 1))
+    img = np.expand_dims(img, axis=0)
+
+    return img
+
+
+def simulate_street_conditions(
+    img: np.ndarray,
+    condition: str = "day",
+) -> np.ndarray:
+    """
+    Apply deterministic image adjustments that mimic common street conditions.
+    Useful for reproducible test-time evaluation across lighting regimes.
+
+    Args:
+        img: Input image (H, W, C) in RGB uint8 format
+        condition: One of ``'day'``, ``'night'``, ``'overcast'``, ``'dusk'``
+
+    Returns:
+        Adjusted image (H, W, C) in RGB uint8 format
+    """
+    img = img.copy().astype(np.float32)
+
+    if condition == "night":
+        # Darken and add slight blue tint
+        img *= 0.3
+        img[:, :, 2] = np.clip(img[:, :, 2] + 15, 0, 255)
+    elif condition == "overcast":
+        # Flatten contrast, slight desaturation
+        mean = img.mean()
+        img = img * 0.7 + mean * 0.3
+    elif condition == "dusk":
+        img *= 0.55
+        img[:, :, 0] = np.clip(img[:, :, 0] + 20, 0, 255)  # warm red tint
+        img[:, :, 2] = np.clip(img[:, :, 2] + 10, 0, 255)
+    # else "day" — no adjustment
+
+    return np.clip(img, 0, 255).astype(np.uint8)

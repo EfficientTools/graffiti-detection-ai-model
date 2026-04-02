@@ -1,0 +1,68 @@
+# Street-scenario specific training & evaluation profile
+# Tuned for public street / CCTV camera feeds where graffiti commonly appears
+
+# ───────────── Scenario definitions ─────────────
+scenarios:
+  urban_daylight:
+    description: "Well-lit daytime street with direct sunlight and hard shadows"
+    brightness_range: [0.9, 1.2]
+    noise_level: low
+    weather: clear
+
+  urban_night:
+    description: "Night-time street with artificial lighting, high noise"
+    brightness_range: [0.15, 0.40]
+    noise_level: high
+    weather: clear
+
+  rainy_street:
+    description: "Wet surfaces, rain streaks, reduced visibility"
+    brightness_range: [0.5, 0.8]
+    noise_level: medium
+    weather: rain
+
+  foggy_morning:
+    description: "Early-morning fog reducing contrast and sharpness"
+    brightness_range: [0.6, 0.9]
+    noise_level: low
+    weather: fog
+
+  overcast:
+    description: "Cloudy, even lighting, mild contrast"
+    brightness_range: [0.65, 0.85]
+    noise_level: low
+    weather: overcast
+
+  dusk_dawn:
+    description: "Transition lighting with warm colour cast"
+    brightness_range: [0.35, 0.60]
+    noise_level: medium
+    weather: clear
+
+# ───────────── Surface types ─────────────
+target_surfaces:
+  - concrete_wall
+  - brick_wall
+  - metal_shutter
+  - bridge_pillar
+  - underpass
+  - utility_box
+  - transit_vehicle
+
+# ───────────── Detection thresholds (tuned for street feeds) ─────────────
+detection:
+  conf_threshold: 0.18        # lower to catch faint / fresh tags
+  iou_threshold: 0.40         # overlapping tags are common on walls
+  min_box_area_ratio: 0.001   # allow very small distant graffiti
+  max_det: 600                # dense urban scenes
+
+# ───────────── Augmentation hint for training ─────────────
+augmentation:
+  preset: street              # maps to get_street_scene_augmentation()
+
+# ───────────── Evaluation requirements ─────────────
+quality_gates:
+  min_mAP_50: 0.55
+  min_recall: 0.60
+  min_precision: 0.50
+  max_false_positive_rate: 0.25
