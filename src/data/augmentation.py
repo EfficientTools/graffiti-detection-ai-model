@@ -3,9 +3,22 @@ Data augmentation pipeline for graffiti detection.
 Uses Albumentations library for efficient and flexible augmentation.
 """
 
+import math
+import os
+
+os.environ.setdefault("NO_ALBUMENTATIONS_UPDATE", "1")
+
 import albumentations as A
-from albumentations.pytorch import ToTensorV2
 from typing import Optional
+
+
+def _variance_to_std_range(noise_var_limit: tuple) -> tuple:
+    """Convert old pixel variance limits to Albumentations 2.x std_range."""
+    low, high = noise_var_limit
+    return (
+        min(max(math.sqrt(low) / 255.0, 0.0), 1.0),
+        min(max(math.sqrt(high) / 255.0, 0.0), 1.0),
+    )
 
 
 def get_training_augmentation(
@@ -38,19 +51,19 @@ def get_training_augmentation(
             min_height=img_size,
             min_width=img_size,
             border_mode=0,  # cv2.BORDER_CONSTANT
-            value=(114, 114, 114),
+            fill=(114, 114, 114),
             p=1.0
         ),
         
         # Geometric transformations
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.1),
-        A.ShiftScaleRotate(
-            shift_limit=0.1,
-            scale_limit=0.2,
-            rotate_limit=15,
+        A.Affine(
+            translate_percent=(-0.1, 0.1),
+            scale=(0.8, 1.2),
+            rotate=(-15, 15),
             border_mode=0,
-            value=(114, 114, 114),
+            fill=(114, 114, 114),
             p=0.5
         ),
         A.Perspective(scale=(0.05, 0.1), p=0.3),
@@ -74,15 +87,14 @@ def get_training_augmentation(
         # Quality degradations (simulate real-world conditions)
         A.OneOf([
             A.Blur(blur_limit=blur_limit, p=1.0),
-            A.GaussNoise(var_limit=noise_var_limit, p=1.0),
+            A.GaussNoise(std_range=_variance_to_std_range(noise_var_limit), p=1.0),
             A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1.0),
         ], p=0.3),
         
         # Weather and lighting conditions
         A.OneOf([
             A.RandomRain(
-                slant_lower=-10,
-                slant_upper=10,
+                slant_range=(-10, 10),
                 drop_length=20,
                 drop_width=1,
                 drop_color=(200, 200, 200),
@@ -91,11 +103,10 @@ def get_training_augmentation(
                 rain_type="default",
                 p=1.0
             ),
-            A.RandomFog(fog_coef_lower=0.1, fog_coef_upper=0.3, p=1.0),
+            A.RandomFog(fog_coef_range=(0.1, 0.3), p=1.0),
             A.RandomShadow(
                 shadow_roi=(0, 0.5, 1, 1),
-                num_shadows_lower=1,
-                num_shadows_upper=2,
+                num_shadows_limit=(1, 2),
                 shadow_dimension=5,
                 p=1.0
             ),
@@ -104,18 +115,15 @@ def get_training_augmentation(
         # Image quality
         A.OneOf([
             A.Sharpen(alpha=(0.2, 0.5), lightness=(0.5, 1.0), p=1.0),
-            A.ImageCompression(quality_lower=75, quality_upper=100, p=1.0),
+            A.ImageCompression(quality_range=(75, 100), p=1.0),
         ], p=0.2),
         
         # Advanced augmentations
         A.CoarseDropout(
-            max_holes=8,
-            max_height=32,
-            max_width=32,
-            min_holes=1,
-            min_height=8,
-            min_width=8,
-            fill_value=0,
+            num_holes_range=(1, 8),
+            hole_height_range=(8, 32),
+            hole_width_range=(8, 32),
+            fill=0,
             p=0.3
         ),
         
@@ -149,7 +157,7 @@ def get_validation_augmentation(img_size: int = 640) -> A.Compose:
             min_height=img_size,
             min_width=img_size,
             border_mode=0,
-            value=(114, 114, 114),
+            fill=(114, 114, 114),
             p=1.0
         ),
         # A.Normalize(mean=(0.0, 0.0, 0.0), std=(1.0, 1.0, 1.0), max_pixel_value=255.0),
@@ -211,7 +219,7 @@ def get_inference_transform(img_size: int = 640) -> A.Compose:
             min_height=img_size,
             min_width=img_size,
             border_mode=0,
-            value=(114, 114, 114),
+            fill=(114, 114, 114),
             p=1.0
         ),
     ])
@@ -281,18 +289,18 @@ def get_street_scene_augmentation(img_size: int = 640) -> A.Compose:
             min_height=img_size,
             min_width=img_size,
             border_mode=0,
-            value=(114, 114, 114),
+            fill=(114, 114, 114),
             p=1.0
         ),
 
         # Street-specific geometric transforms
         A.HorizontalFlip(p=0.5),
-        A.ShiftScaleRotate(
-            shift_limit=0.15,
-            scale_limit=0.3,
-            rotate_limit=10,
+        A.Affine(
+            translate_percent=(-0.15, 0.15),
+            scale=(0.7, 1.3),
+            rotate=(-10, 10),
             border_mode=0,
-            value=(114, 114, 114),
+            fill=(114, 114, 114),
             p=0.6
         ),
         A.Perspective(scale=(0.05, 0.12), p=0.4),
@@ -320,8 +328,7 @@ def get_street_scene_augmentation(img_size: int = 640) -> A.Compose:
         # Shadows cast by buildings and street furniture
         A.RandomShadow(
             shadow_roi=(0, 0.3, 1, 1),
-            num_shadows_lower=1,
-            num_shadows_upper=3,
+            num_shadows_limit=(1, 3),
             shadow_dimension=6,
             p=0.4
         ),
@@ -329,8 +336,7 @@ def get_street_scene_augmentation(img_size: int = 640) -> A.Compose:
         # Weather conditions common on streets
         A.OneOf([
             A.RandomRain(
-                slant_lower=-10,
-                slant_upper=10,
+                slant_range=(-10, 10),
                 drop_length=20,
                 drop_width=1,
                 drop_color=(200, 200, 200),
@@ -339,13 +345,11 @@ def get_street_scene_augmentation(img_size: int = 640) -> A.Compose:
                 rain_type="default",
                 p=1.0
             ),
-            A.RandomFog(fog_coef_lower=0.15, fog_coef_upper=0.45, p=1.0),
+            A.RandomFog(fog_coef_range=(0.15, 0.45), p=1.0),
             A.RandomSunFlare(
                 flare_roi=(0, 0, 1, 0.5),
-                angle_lower=0.0,
-                angle_upper=1.0,
-                num_flare_circles_lower=3,
-                num_flare_circles_upper=6,
+                angle_range=(0.0, 1.0),
+                num_flare_circles_range=(3, 6),
                 src_radius=200,
                 p=1.0
             ),
@@ -355,22 +359,19 @@ def get_street_scene_augmentation(img_size: int = 640) -> A.Compose:
         A.OneOf([
             A.MotionBlur(blur_limit=9, p=1.0),
             A.Blur(blur_limit=7, p=1.0),
-            A.GaussNoise(var_limit=(15.0, 60.0), p=1.0),
+            A.GaussNoise(std_range=_variance_to_std_range((15.0, 60.0)), p=1.0),
             A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.6), p=1.0),
         ], p=0.35),
 
         # Compression / low-quality CCTV feed simulation
-        A.ImageCompression(quality_lower=50, quality_upper=95, p=0.3),
+        A.ImageCompression(quality_range=(50, 95), p=0.3),
 
         # Partial occlusion (poles, fences, passing objects)
         A.CoarseDropout(
-            max_holes=10,
-            max_height=48,
-            max_width=48,
-            min_holes=1,
-            min_height=12,
-            min_width=12,
-            fill_value=0,
+            num_holes_range=(1, 10),
+            hole_height_range=(12, 48),
+            hole_width_range=(12, 48),
+            fill=0,
             p=0.35
         ),
 
