@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "graffiti-detection-ai-model"
-version = "0.1.1"
+version = "0.1.2"
 description = "Graffiti detection package using YOLOv8 for training, inference, surveillance, and API integration."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -65,5 +65,5 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*"]
+include = ["graffiti_detection*", "src*"]
 exclude = ["tests*", "notebooks*", "deployment*"]

@@ -50,7 +50,10 @@ pip install graffiti-detection-ai-model
 Quick import example:
 
 ```python
-from src.evaluation.metrics import calculate_iou
+from graffiti_detection import GraffitiDetector
+
+detector = GraffitiDetector("models/best.pt")
+detections = detector.predict("image.jpg")
 ```
 
 ## Quick Start
@@ -136,11 +139,12 @@ For Docker/Compose/Kubernetes/edge/cloud setup, see [DEPLOYMENT.md](DEPLOYMENT.m
 ## Project Structure
 
 ```text
-api/        FastAPI service
-configs/    Dataset, training, cameras, alerts configs
-scripts/    Training, inference, evaluation, surveillance, dashboard tools
-src/        Core data/evaluation/util modules
-tests/      Unit and integration tests
+api/                 FastAPI service
+configs/             Dataset, training, cameras, alerts configs
+graffiti_detection/  Public Python package
+scripts/             Training, inference, evaluation, surveillance, dashboard tools
+src/                 Backward-compatible internal modules
+tests/               Unit and integration tests
 ```
 
 ## Author

@@ -14,9 +14,9 @@ from tqdm import tqdm
 import sys
 import os
 
-# Add src to path
+# Add project root when running the script directly from a checkout.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from src.utils.visualization import draw_boxes, save_detection_crops
+from graffiti_detection.utils.visualization import draw_boxes, save_detection_crops
 
 
 def parse_args():

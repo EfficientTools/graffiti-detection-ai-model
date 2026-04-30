@@ -17,8 +17,8 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
-from src.utils.alerts import AlertManager
-from src.utils.visualization import draw_boxes
+from graffiti_detection.utils.alerts import AlertManager
+from graffiti_detection.utils.visualization import draw_boxes
 
 
 class CameraMonitor:

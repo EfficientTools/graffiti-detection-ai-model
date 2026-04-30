@@ -3,8 +3,9 @@ FastAPI REST API for Real-Time Graffiti Detection
 Deploy as a service for integration with security systems
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
-from fastapi.responses import JSONResponse, StreamingResponse
+import os
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import cv2
@@ -12,17 +13,15 @@ import numpy as np
 from ultralytics import YOLO
 import io
 from datetime import datetime
-import json
-from pathlib import Path
+from graffiti_detection import __version__
 
 app = FastAPI(
     title="Graffiti Detection API",
     description="Real-time AI-powered graffiti detection and vandalism alert system",
-    version="1.0.0"
+    version=__version__,
 )
 
-# Load model (update path as needed)
-MODEL_PATH = "models/best.pt"
+MODEL_PATH = os.getenv("MODEL_PATH", "models/best.pt")
 model = None
 
 @app.on_event("startup")
@@ -57,7 +56,7 @@ async def root():
     return {
         "status": "online",
         "service": "Graffiti Detection API",
-        "version": "1.0.0",
+        "version": __version__,
         "model": MODEL_PATH
     }
 
