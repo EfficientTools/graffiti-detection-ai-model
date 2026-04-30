@@ -227,11 +227,12 @@ class IncidentLogger:
         # Time filter
         time_filter = ""
         if time_period == "today":
-            time_filter = f"WHERE date(timestamp) = date('now')"
+            # Use localtime to match Python's local timestamp generation.
+            time_filter = "WHERE date(timestamp) = date('now', 'localtime')"
         elif time_period == "week":
-            time_filter = f"WHERE timestamp >= datetime('now', '-7 days')"
+            time_filter = "WHERE timestamp >= datetime('now', 'localtime', '-7 days')"
         elif time_period == "month":
-            time_filter = f"WHERE timestamp >= datetime('now', '-30 days')"
+            time_filter = "WHERE timestamp >= datetime('now', 'localtime', '-30 days')"
         
         # Total incidents
         cursor.execute(f"SELECT COUNT(*) FROM incidents {time_filter}")
@@ -293,8 +294,8 @@ class IncidentLogger:
             date = datetime.now().strftime("%Y-%m-%d")
         
         incidents = self.get_incidents(
-            start_date=f"{date} 00:00:00",
-            end_date=f"{date} 23:59:59"
+            start_date=f"{date}T00:00:00",
+            end_date=f"{date}T23:59:59.999999"
         )
         
         stats = self.get_statistics("today")
