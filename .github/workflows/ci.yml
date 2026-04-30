@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.9", "3.11"]
 
     steps:
       - name: Check out source
@@ -43,10 +43,16 @@ jobs:
         run: pip install pytest build twine
 
       - name: Run tests
-        run: pytest tests/ -q
+        run: pytest tests/ -q -m "not gpu"
 
       - name: Build package
         run: python -m build
 
       - name: Validate package metadata
         run: twine check dist/*
+
+      - name: Verify wheel install and import smoke test
+        if: matrix.python-version == '3.11'
+        run: |
+          python -m pip install --force-reinstall dist/*.whl
+          python -c "from graffiti_detection import __version__; from graffiti_detection.evaluation.metrics import calculate_iou; import numpy as np; assert __version__ == '0.1.2'; assert calculate_iou(np.array([0,0,1,1]), np.array([0,0,1,1])) == 1.0"
