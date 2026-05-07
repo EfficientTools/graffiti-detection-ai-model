@@ -34,14 +34,14 @@ I built this library because I hate seeing my city being destroyed and ruined by
 ## Installation
 
 ```bash
-git clone https://github.com/<your-username>/graffiti-detection-ai-model.git
+git clone https://github.com/EfficientTools/graffiti-detection-ai-model.git
 cd graffiti-detection-ai-model
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Install directly from pip (after the first PyPI release):
+Install directly from pip:
 
 ```bash
 pip install graffiti-detection-ai-model
