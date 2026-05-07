@@ -4,6 +4,21 @@
   <img src="assets/graffiti-detection-logo.svg" alt="Graffiti Detection AI logo" width="980" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/EfficientTools/graffiti-detection-ai-model/actions/workflows/ci.yml">
+    <img src="https://github.com/EfficientTools/graffiti-detection-ai-model/actions/workflows/ci.yml/badge.svg" alt="CI" />
+  </a>
+  <a href="https://pypi.org/project/graffiti-detection-ai-model/">
+    <img src="https://img.shields.io/pypi/v/graffiti-detection-ai-model" alt="PyPI version" />
+  </a>
+  <a href="https://pypi.org/project/graffiti-detection-ai-model/">
+    <img src="https://img.shields.io/pypi/pyversions/graffiti-detection-ai-model" alt="Python versions" />
+  </a>
+  <a href="LICENSE.md">
+    <img src="https://img.shields.io/badge/license-MIT-blue" alt="License: MIT" />
+  </a>
+</p>
+
 AI-powered graffiti detection built on YOLOv8 for training, inference, surveillance, alerting, and API integration.
 
 ## Why I Built This
