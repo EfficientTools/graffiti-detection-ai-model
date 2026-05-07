@@ -79,15 +79,21 @@ outputs/logs/*
 outputs/visualizations/*
 outputs/metrics/*
 outputs/predictions/*
+outputs/crops/*
 !outputs/logs/.gitkeep
 !outputs/visualizations/.gitkeep
 !outputs/metrics/.gitkeep
 !outputs/predictions/.gitkeep
+!outputs/crops/.gitkeep
 
 # Training artifacts
 runs/
 wandb/
 *.log
+
+# User-created configs (may contain real credentials — never commit)
+configs/cameras.json
+configs/alerts.json
 
 # macOS
 .DS_Store
