@@ -1,7 +1,7 @@
 {
   "camera_1": {
     "name": "Building A - North Wall",
-    "source": "rtsp://admin:password@192.168.1.101:554/stream",
+    "source": "rtsp://<USERNAME>:<PASSWORD>@192.168.1.101:554/stream",
     "conf_threshold": 0.3,
     "location": {
       "lat": 40.7128,
@@ -12,7 +12,7 @@
   },
   "camera_2": {
     "name": "Parking Garage - Level 1",
-    "source": "rtsp://admin:password@192.168.1.102:554/stream",
+    "source": "rtsp://<USERNAME>:<PASSWORD>@192.168.1.102:554/stream",
     "conf_threshold": 0.35,
     "location": {
       "lat": 40.7130,
@@ -23,7 +23,7 @@
   },
   "camera_3": {
     "name": "Bridge Underpass",
-    "source": "rtsp://admin:password@192.168.1.103:554/stream",
+    "source": "rtsp://<USERNAME>:<PASSWORD>@192.168.1.103:554/stream",
     "conf_threshold": 0.25,
     "location": {
       "lat": 40.7125,
