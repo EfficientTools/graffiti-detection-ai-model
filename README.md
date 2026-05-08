@@ -21,9 +21,19 @@
 
 AI-powered graffiti detection built on YOLOv8 for training, inference, surveillance, alerting, and API integration.
 
+Built for municipalities, property managers, security teams, and developers who need a practical computer vision pipeline for detecting graffiti in the field.
+
 ## Why I Built This
 
-I built this library because I hate seeing my city being destroyed and ruined by graffiti. The goal is to detect incidents early so response teams can act faster.
+I built this project to help teams detect graffiti earlier, respond faster, and reduce the operational cost of vandalism. The focus is not just model training, but a usable end-to-end workflow that can plug into real monitoring and reporting pipelines.
+
+## At a Glance
+
+- Train YOLOv8 models on graffiti datasets in YOLO format
+- Run inference on images, folders, videos, and live webcams
+- Monitor multiple camera feeds and trigger alert channels automatically
+- Expose a FastAPI service for integration with existing systems
+- Log incidents for downstream reporting and operational follow-up
 
 ## What This Project Does
 
@@ -33,12 +43,19 @@ I built this library because I hate seeing my city being destroyed and ruined by
 - Exposes a FastAPI service for integration with existing systems
 - Logs incidents to SQLite/JSON and supports daily reporting
 
-## What Makes It Stand Out
+## Highlights
 
 - End-to-end pipeline in one repo: data prep -> training -> inference -> surveillance -> API -> incident tracking
 - Production-oriented scripts (not notebook-only)
 - Alert channel support: email, SMS, webhook, Discord, Slack
 - Test coverage across data, metrics, alerts, visualization, incident logging, and integration
+
+## Good Fit For
+
+- City maintenance and anti-vandalism monitoring pilots
+- Property and facility surveillance workflows
+- AI engineers who want a packaged YOLOv8 graffiti detection baseline
+- Teams that need both Python package usage and runnable scripts
 
 ## Requirements
 
@@ -48,18 +65,22 @@ I built this library because I hate seeing my city being destroyed and ruined by
 
 ## Installation
 
+Choose the setup that matches your use case.
+
+Install from PyPI for package usage:
+
+```bash
+pip install graffiti-detection-ai-model
+```
+
+Install from source if you want the full training, scripts, and deployment workflow:
+
 ```bash
 git clone https://github.com/EfficientTools/graffiti-detection-ai-model.git
 cd graffiti-detection-ai-model
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-Install directly from pip:
-
-```bash
-pip install graffiti-detection-ai-model
 ```
 
 Quick import example:

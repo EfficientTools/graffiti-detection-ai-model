@@ -56,9 +56,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pH-7/graffiti-detection-ai-model"
-Repository = "https://github.com/pH-7/graffiti-detection-ai-model"
-Issues = "https://github.com/pH-7/graffiti-detection-ai-model/issues"
+Homepage = "https://github.com/EfficientTools/graffiti-detection-ai-model"
+Repository = "https://github.com/EfficientTools/graffiti-detection-ai-model"
+Issues = "https://github.com/EfficientTools/graffiti-detection-ai-model/issues"
 
 [tool.setuptools]
 include-package-data = true
