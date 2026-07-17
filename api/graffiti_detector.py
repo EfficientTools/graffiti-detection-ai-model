@@ -1,35 +1,42 @@
-"""
-FastAPI REST API for Real-Time Graffiti Detection
-Deploy as a service for integration with security systems
-"""
+"""FastAPI service for graffiti detection."""
 
+import io
 import os
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+from time import perf_counter
 from typing import List, Optional
+
 import cv2
 import numpy as np
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from ultralytics import YOLO
-import io
-from datetime import datetime
-from graffiti_detection import __version__
 
-app = FastAPI(
-    title="Graffiti Detection API",
-    description="Real-time AI-powered graffiti detection and vandalism alert system",
-    version=__version__,
-)
+from graffiti_detection import __version__
 
 MODEL_PATH = os.getenv("MODEL_PATH", "models/best.pt")
 model = None
 
-@app.on_event("startup")
-async def load_model():
-    """Load YOLO model on startup"""
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """Load the model once for the lifetime of the API process."""
     global model
     model = YOLO(MODEL_PATH)
-    print(f"✓ Model loaded: {MODEL_PATH}")
+    try:
+        yield
+    finally:
+        model = None
+
+
+app = FastAPI(
+    title="Graffiti Detection API",
+    description="Real-time graffiti detection API",
+    version=__version__,
+    lifespan=lifespan,
+)
 
 
 class DetectionResponse(BaseModel):
@@ -50,6 +57,14 @@ class AlertConfig(BaseModel):
     email_recipients: Optional[List[str]] = None
 
 
+def decode_image(contents: bytes) -> np.ndarray:
+    """Decode an uploaded image or return a client-facing validation error."""
+    image = cv2.imdecode(np.frombuffer(contents, np.uint8), cv2.IMREAD_COLOR)
+    if image is None:
+        raise HTTPException(status_code=400, detail="Invalid image file")
+    return image
+
+
 @app.get("/")
 async def root():
     """API health check"""
@@ -64,7 +79,7 @@ async def root():
 @app.post("/detect", response_model=DetectionResponse)
 async def detect_graffiti(
     file: UploadFile = File(...),
-    conf_threshold: float = 0.25,
+    conf_threshold: float = Query(0.25, ge=0.0, le=1.0),
     trigger_alert: bool = True
 ):
     """
@@ -78,20 +93,12 @@ async def detect_graffiti(
         raise HTTPException(status_code=503, detail="Model not loaded")
     
     try:
-        # Read image
-        contents = await file.read()
-        nparr = np.frombuffer(contents, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if image is None:
-            raise HTTPException(status_code=400, detail="Invalid image file")
+        image = decode_image(await file.read())
         
         # Run detection
-        start_time = datetime.now()
+        start_time = perf_counter()
         results = model(image, conf=conf_threshold, verbose=False)
-        end_time = datetime.now()
-        
-        processing_time = (end_time - start_time).total_seconds() * 1000
+        processing_time = (perf_counter() - start_time) * 1000
         
         # Extract detections
         boxes = results[0].boxes
@@ -107,19 +114,24 @@ async def detect_graffiti(
             detections=detections,
             confidence_scores=confidence_scores,
             bounding_boxes=bounding_boxes,
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             alert_triggered=alert_triggered,
             processing_time_ms=round(processing_time, 2)
         )
         
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Detection failed: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Detection failed: {exc}",
+        ) from exc
 
 
 @app.post("/detect/annotated")
 async def detect_and_annotate(
     file: UploadFile = File(...),
-    conf_threshold: float = 0.25
+    conf_threshold: float = Query(0.25, ge=0.0, le=1.0),
 ):
     """
     Detect graffiti and return annotated image
@@ -130,13 +142,7 @@ async def detect_and_annotate(
         raise HTTPException(status_code=503, detail="Model not loaded")
     
     try:
-        # Read image
-        contents = await file.read()
-        nparr = np.frombuffer(contents, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if image is None:
-            raise HTTPException(status_code=400, detail="Invalid image file")
+        image = decode_image(await file.read())
         
         # Run detection
         results = model(image, conf=conf_threshold, verbose=False)
@@ -145,19 +151,26 @@ async def detect_and_annotate(
         annotated = results[0].plot()
         
         # Encode to JPEG
-        _, buffer = cv2.imencode('.jpg', annotated)
+        encoded, buffer = cv2.imencode('.jpg', annotated)
+        if not encoded:
+            raise HTTPException(status_code=500, detail="Failed to encode result")
         io_buf = io.BytesIO(buffer)
         
         return StreamingResponse(io_buf, media_type="image/jpeg")
         
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Detection failed: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Detection failed: {exc}",
+        ) from exc
 
 
 @app.post("/detect/batch")
 async def detect_batch(
     files: List[UploadFile] = File(...),
-    conf_threshold: float = 0.25
+    conf_threshold: float = Query(0.25, ge=0.0, le=1.0),
 ):
     """
     Detect graffiti in multiple images
@@ -171,16 +184,7 @@ async def detect_batch(
     
     for file in files:
         try:
-            contents = await file.read()
-            nparr = np.frombuffer(contents, np.uint8)
-            image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-            
-            if image is None:
-                results_list.append({
-                    "filename": file.filename,
-                    "error": "Invalid image"
-                })
-                continue
+            image = decode_image(await file.read())
             
             # Run detection
             results = model(image, conf=conf_threshold, verbose=False)
@@ -193,10 +197,15 @@ async def detect_batch(
                 "bounding_boxes": [box.xyxy[0].tolist() for box in boxes]
             })
             
-        except Exception as e:
+        except HTTPException as exc:
             results_list.append({
                 "filename": file.filename,
-                "error": str(e)
+                "error": exc.detail,
+            })
+        except Exception as exc:
+            results_list.append({
+                "filename": file.filename,
+                "error": str(exc)
             })
     
     return {"results": results_list, "total_images": len(files)}
@@ -220,10 +229,9 @@ async def get_stats():
 @app.post("/alert/test")
 async def test_alert(config: AlertConfig):
     """Test alert system configuration"""
-    # This would integrate with your alert system
     return {
         "status": "Alert configuration valid",
-        "config": config.dict()
+        "config": config.model_dump()
     }
 
 
