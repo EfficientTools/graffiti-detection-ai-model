@@ -11,14 +11,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 from queue import Queue
-from typing import Dict, List, Optional
+from typing import Dict, Optional, Union
 
 import cv2
-import numpy as np
 from ultralytics import YOLO
 
 from graffiti_detection.utils.alerts import AlertManager
-from graffiti_detection.utils.visualization import draw_boxes
 
 
 class CameraMonitor:
@@ -27,16 +25,18 @@ class CameraMonitor:
     def __init__(
         self,
         camera_id: str,
-        source: str,
+        source: Union[str, int],
         model: YOLO,
         conf_threshold: float = 0.3,
-        alert_queue: Queue = None
+        alert_queue: Optional[Queue] = None,
+        model_lock: Optional[threading.Lock] = None,
     ):
         self.camera_id = camera_id
         self.source = source
         self.model = model
         self.conf_threshold = conf_threshold
         self.alert_queue = alert_queue
+        self.model_lock = model_lock or threading.Lock()
         self.running = False
         self.cap = None
         
@@ -47,6 +47,8 @@ class CameraMonitor:
         
         if not self.cap.isOpened():
             print(f"[ERROR] Failed to open camera: {self.camera_id}")
+            self.cap.release()
+            self.running = False
             return
             
         print(f"[INFO] Started monitoring camera: {self.camera_id}")
@@ -64,9 +66,10 @@ class CameraMonitor:
                 
             frame_count += 1
             
-            # Run detection every frame (adjust for performance)
-            if frame_count % 1 == 0:
-                results = self.model(frame, conf=self.conf_threshold, verbose=False)
+            if frame_count:
+                # Ultralytics models are not guaranteed to be thread-safe.
+                with self.model_lock:
+                    results = self.model(frame, conf=self.conf_threshold, verbose=False)
                 
                 # Check for detections
                 if len(results[0].boxes) > 0:
@@ -118,6 +121,8 @@ class MultiCameraSurveillance:
         self.alert_queue = Queue()
         self.monitors = []
         self.threads = []
+        self.alert_thread = None
+        self.model_lock = threading.Lock()
         
         # Initialize alert manager
         self.alert_manager = None
@@ -126,38 +131,54 @@ class MultiCameraSurveillance:
     
     def start_monitoring(self):
         """Start monitoring all cameras"""
-        print(f"[INFO] Starting surveillance system with {len(self.cameras_config)} cameras")
-        
-        for camera_id, camera_info in self.cameras_config.items():
+        enabled_cameras = self._enabled_cameras()
+        print(
+            f"[INFO] Starting surveillance system with "
+            f"{len(enabled_cameras)} enabled cameras"
+        )
+
+        for camera_id, camera_info in enabled_cameras:
             monitor = CameraMonitor(
                 camera_id=camera_id,
                 source=camera_info['source'],
                 model=self.model,
                 conf_threshold=camera_info.get('conf_threshold', 0.3),
-                alert_queue=self.alert_queue
+                alert_queue=self.alert_queue,
+                model_lock=self.model_lock,
             )
-            
+
             thread = threading.Thread(target=monitor.start, daemon=True)
             thread.start()
-            
+
             self.monitors.append(monitor)
             self.threads.append(thread)
-            
+
             # Small delay between camera starts
             time.sleep(0.5)
-        
+
         # Start alert processor
-        alert_thread = threading.Thread(target=self._process_alerts, daemon=True)
-        alert_thread.start()
-        
+        self.alert_thread = threading.Thread(
+            target=self._process_alerts,
+            daemon=True,
+        )
+        self.alert_thread.start()
+
         print("[INFO] All cameras are now active. Press Ctrl+C to stop.")
-        
+
         try:
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
             print("\n[INFO] Shutting down surveillance system...")
             self.stop_monitoring()
+
+    def _enabled_cameras(self):
+        """Return configured cameras that are enabled for monitoring."""
+        return [
+            (camera_id, camera_info)
+            for camera_id, camera_info in self.cameras_config.items()
+            if camera_info.get('enabled', True)
+        ]
     
     def _process_alerts(self):
         """Process alerts from the queue"""
@@ -190,6 +211,8 @@ class MultiCameraSurveillance:
             thread.join(timeout=5)
         
         self.alert_queue.put(None)
+        if self.alert_thread is not None:
+            self.alert_thread.join(timeout=5)
         print("[INFO] Surveillance system stopped.")
 
 
