@@ -11,7 +11,7 @@ from api import graffiti_detector
 
 def make_image_bytes() -> bytes:
     image = np.zeros((16, 16, 3), dtype=np.uint8)
-    encoded, buffer = cv2.imencode('.jpg', image)
+    encoded, buffer = cv2.imencode(".jpg", image)
     assert encoded
     return buffer.tobytes()
 
@@ -29,37 +29,37 @@ def make_model():
 
 def api_client():
     model = make_model()
-    yolo = patch.object(graffiti_detector, 'YOLO', return_value=model)
+    yolo = patch.object(graffiti_detector, "YOLO", return_value=model)
     return yolo, TestClient(graffiti_detector.app)
 
 
 def test_health_endpoint_reports_package_version():
     yolo, client = api_client()
     with yolo, client:
-        response = client.get('/')
+        response = client.get("/")
 
     assert response.status_code == 200
-    assert response.json()['version'] == graffiti_detector.__version__
+    assert response.json()["version"] == graffiti_detector.__version__
 
 
 def test_detect_rejects_invalid_images_as_client_errors():
     yolo, client = api_client()
     with yolo, client:
         response = client.post(
-            '/detect',
-            files={'file': ('broken.jpg', b'not-an-image', 'image/jpeg')},
+            "/detect",
+            files={"file": ("broken.jpg", b"not-an-image", "image/jpeg")},
         )
 
     assert response.status_code == 400
-    assert response.json()['detail'] == 'Invalid image file'
+    assert response.json()["detail"] == "Invalid image file"
 
 
 def test_detect_validates_confidence_threshold():
     yolo, client = api_client()
     with yolo, client:
         response = client.post(
-            '/detect?conf_threshold=1.1',
-            files={'file': ('image.jpg', make_image_bytes(), 'image/jpeg')},
+            "/detect?conf_threshold=1.1",
+            files={"file": ("image.jpg", make_image_bytes(), "image/jpeg")},
         )
 
     assert response.status_code == 422
@@ -69,11 +69,11 @@ def test_detect_returns_normalized_response_contract():
     yolo, client = api_client()
     with yolo, client:
         response = client.post(
-            '/detect',
-            files={'file': ('image.jpg', make_image_bytes(), 'image/jpeg')},
+            "/detect",
+            files={"file": ("image.jpg", make_image_bytes(), "image/jpeg")},
         )
 
     assert response.status_code == 200
-    assert response.json()['detections'] == 1
-    assert response.json()['bounding_boxes'] == [[1.0, 2.0, 10.0, 12.0]]
-    assert response.json()['alert_triggered'] is True
+    assert response.json()["detections"] == 1
+    assert response.json()["bounding_boxes"] == [[1.0, 2.0, 10.0, 12.0]]
+    assert response.json()["alert_triggered"] is True

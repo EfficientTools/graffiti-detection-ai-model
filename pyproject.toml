@@ -109,3 +109,11 @@ exclude = ["tests*", "notebooks*", "deployment*"]
 
 [tool.setuptools.dynamic]
 version = { attr = "graffiti_detection._version.__version__" }
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
