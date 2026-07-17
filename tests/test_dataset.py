@@ -3,6 +3,8 @@ Unit tests for dataset loading and preprocessing
 """
 
 import unittest
+
+import albumentations as A
 import numpy as np
 import cv2
 from pathlib import Path
@@ -10,6 +12,7 @@ import tempfile
 import shutil
 
 from src.data.dataset import GraffitiDataset, create_dataloaders
+from src.data.augmentation import get_validation_augmentation
 from src.data.preprocessing import letterbox, preprocess_image, postprocess_boxes
 
 
@@ -73,6 +76,46 @@ class TestGraffitiDataset(unittest.TestCase):
         self.assertIsInstance(labels, np.ndarray)
         self.assertEqual(image.shape[2], 3)  # RGB
         self.assertEqual(labels.shape[1], 5)  # class + bbox coords
+
+    def test_dataset_uses_normalized_boxes_for_augmentation(self):
+        dataset = GraffitiDataset(
+            image_paths=[str(self.image_path)],
+            label_paths=[str(self.label_path)],
+            img_size=640,
+            augmentation=get_validation_augmentation(640),
+        )
+
+        sample = dataset[0]
+
+        self.assertEqual(sample['labels'].shape, (1, 5))
+        self.assertTrue(np.all(sample['labels'].numpy()[:, 1:] <= 1.0))
+        self.assertTrue(np.all(sample['labels'].numpy()[:, 1:] >= 0.0))
+
+    def test_dataset_augments_images_without_boxes(self):
+        empty_label_path = self.label_dir / "empty.txt"
+        empty_label_path.write_text("")
+        transform = A.Compose(
+            [A.HorizontalFlip(p=1.0)],
+            bbox_params=A.BboxParams(
+                format='yolo',
+                label_fields=['class_labels'],
+            ),
+        )
+        dataset = GraffitiDataset(
+            image_paths=[str(self.image_path)],
+            label_paths=[str(empty_label_path)],
+            augmentation=transform,
+        )
+
+        sample = dataset[0]
+
+        expected = cv2.cvtColor(
+            cv2.imread(str(self.image_path)), cv2.COLOR_BGR2RGB
+        )[:, ::-1]
+        expected = cv2.resize(expected, (640, 640)).astype(np.float32) / 255.0
+        expected = np.transpose(expected, (2, 0, 1))
+        np.testing.assert_allclose(sample['image'].numpy(), expected)
+        self.assertEqual(sample['labels'].shape, (0, 5))
 
 
 class TestPreprocessing(unittest.TestCase):

@@ -5,12 +5,12 @@ Supports YOLO format annotations and integrates with PyTorch DataLoader.
 
 import os
 from pathlib import Path
-from typing import List, Tuple, Optional, Dict
+from typing import Dict, List, Optional, Tuple
+
 import cv2
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from PIL import Image
 
 
 class GraffitiDataset(Dataset):
@@ -92,48 +92,23 @@ class GraffitiDataset(Dataset):
         
         # Apply augmentation
         if self.augmentation is not None and self.augment and labels is not None:
-            # Convert labels for albumentations
-            # From YOLO format (normalized) to pixel coordinates
-            h, w = image.shape[:2]
-            bboxes = []
-            class_labels = []
-            
-            for label in labels:
-                class_id, x_center, y_center, width, height = label
-                # Convert to [x_min, y_min, x_max, y_max] in pixels
-                x_min = (x_center - width / 2) * w
-                y_min = (y_center - height / 2) * h
-                x_max = (x_center + width / 2) * w
-                y_max = (y_center + height / 2) * h
-                
-                bboxes.append([x_min, y_min, x_max, y_max])
-                class_labels.append(int(class_id))
-            
-            # Apply augmentation
-            if len(bboxes) > 0:
-                augmented = self.augmentation(
-                    image=image,
-                    bboxes=bboxes,
-                    class_labels=class_labels
-                )
-                image = augmented['image']
-                bboxes = augmented['bboxes']
-                class_labels = augmented['class_labels']
-                
-                # Convert back to YOLO format
-                h, w = image.shape[:2]
-                labels = []
-                for bbox, cls in zip(bboxes, class_labels):
-                    x_min, y_min, x_max, y_max = bbox
-                    x_center = ((x_min + x_max) / 2) / w
-                    y_center = ((y_min + y_max) / 2) / h
-                    width = (x_max - x_min) / w
-                    height = (y_max - y_min) / h
-                    labels.append([cls, x_center, y_center, width, height])
-                
-                labels = np.array(labels) if labels else np.zeros((0, 5))
-            else:
-                labels = np.zeros((0, 5))
+            bboxes = [label[1:].tolist() for label in labels]
+            class_labels = [int(label[0]) for label in labels]
+            augmented = self.augmentation(
+                image=image,
+                bboxes=bboxes,
+                class_labels=class_labels,
+            )
+            image = augmented['image']
+            labels = np.asarray(
+                [
+                    [class_id, *bbox]
+                    for class_id, bbox in zip(
+                        augmented['class_labels'], augmented['bboxes']
+                    )
+                ],
+                dtype=np.float32,
+            ).reshape(-1, 5)
         
         # Resize image
         image = cv2.resize(image, self.img_size, interpolation=cv2.INTER_LINEAR)
