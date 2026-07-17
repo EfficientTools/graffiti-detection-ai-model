@@ -22,6 +22,26 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
 
+      - name: Verify release tag matches package version
+        if: github.event_name == 'release'
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+
+          with open("pyproject.toml", "rb") as file:
+              version = tomllib.load(file)["project"]["version"]
+
+          expected_tag = f"v{version}"
+          actual_tag = os.environ["RELEASE_TAG"]
+          if actual_tag != expected_tag:
+              raise SystemExit(
+                  f"Release tag {actual_tag!r} must match package version {expected_tag!r}."
+              )
+          PY
+
       - name: Install build tooling
         run: python -m pip install --upgrade pip build twine
 
