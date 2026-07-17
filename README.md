@@ -163,9 +163,7 @@ Main endpoints:
 ## Testing
 
 ```bash
-python tests/run_tests.py
-# or
-pytest tests/
+pytest tests/ -m "not gpu"
 ```
 
 ## Deployment
