@@ -104,7 +104,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["graffiti_detection*", "src*"]
+include = ["graffiti_detection*"]
 exclude = ["tests*", "notebooks*", "deployment*"]
 
 [tool.setuptools.dynamic]

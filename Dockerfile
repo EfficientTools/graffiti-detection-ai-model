@@ -17,7 +17,6 @@ RUN apt-get update \
 
 COPY pyproject.toml README.md LICENSE ./
 COPY graffiti_detection ./graffiti_detection
-COPY src ./src
 
 RUN python -m pip install --upgrade pip \
     && python -m pip install ".[all]"

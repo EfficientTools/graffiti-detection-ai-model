@@ -65,7 +65,7 @@ class TestAlertManager(unittest.TestCase):
 class TestWebhookAlert(unittest.TestCase):
     """Test webhook alerts"""
 
-    @patch("src.utils.alerts.requests.post")
+    @patch("graffiti_detection.utils.alerts.requests.post")
     def test_webhook_alert_send(self, mock_post):
         """Test webhook alert sending"""
         mock_response = Mock()
@@ -97,7 +97,7 @@ class TestWebhookAlert(unittest.TestCase):
 class TestDiscordAlert(unittest.TestCase):
     """Test Discord alerts"""
 
-    @patch("src.utils.alerts.requests.post")
+    @patch("graffiti_detection.utils.alerts.requests.post")
     def test_discord_alert_send(self, mock_post):
         """Test Discord alert sending"""
         mock_response = Mock()
@@ -123,7 +123,7 @@ class TestDiscordAlert(unittest.TestCase):
 class TestSlackAlert(unittest.TestCase):
     """Test Slack alerts"""
 
-    @patch("src.utils.alerts.requests.post")
+    @patch("graffiti_detection.utils.alerts.requests.post")
     def test_slack_alert_send(self, mock_post):
         """Test Slack alert sending"""
         mock_response = Mock()

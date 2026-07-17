@@ -497,13 +497,13 @@ class TestStreetAlerts(unittest.TestCase):
         }
 
     def test_alert_manager_initialises_without_channels(self):
-        from src.utils.alerts import AlertManager
+        from graffiti_detection.utils.alerts import AlertManager
 
         mgr = AlertManager(config={})
         self.assertEqual(len(mgr.alert_channels), 0)
 
     def test_alert_manager_send_no_channels_does_not_crash(self):
-        from src.utils.alerts import AlertManager
+        from graffiti_detection.utils.alerts import AlertManager
 
         mgr = AlertManager(config={})
         mgr.send_alert(self._detection_event())
