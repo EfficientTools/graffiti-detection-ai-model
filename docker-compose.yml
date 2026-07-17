@@ -1,59 +1,39 @@
-version: '3.8'
-
 services:
-  # REST API Service
   api:
-    build: .
-    container_name: graffiti-detector-api
+    build:
+      context: .
+    image: graffiti-detection-ai:${IMAGE_TAG:-local}
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     volumes:
-      - ./models:/app/models
-      - ./outputs:/app/outputs
-      - ./logs:/app/logs
+      - ./models:/app/models:ro
+      - detection-output:/app/outputs
     environment:
-      - MODEL_PATH=/app/models/best.pt
-      - LOG_LEVEL=INFO
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      MODEL_PATH: /app/models/best.pt
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     restart: unless-stopped
-    networks:
-      - graffiti-net
 
-  # Multi-Camera Surveillance Service
   surveillance:
-    build: .
-    container_name: graffiti-surveillance
-    command: >
-      python scripts/multi_camera_surveillance.py
-      --model models/best.pt
-      --cameras configs/cameras.json
-      --alert-config configs/alerts.json
+    profiles: ["surveillance"]
+    build:
+      context: .
+    image: graffiti-detection-ai:${IMAGE_TAG:-local}
+    command:
+      - python
+      - scripts/multi_camera_surveillance.py
+      - --model
+      - /app/models/best.pt
+      - --cameras
+      - /app/configs/cameras.json
+      - --alert-config
+      - /app/configs/alerts.json
     volumes:
-      - ./models:/app/models
-      - ./configs:/app/configs
-      - ./outputs:/app/outputs
-      - ./logs:/app/logs
+      - ./models:/app/models:ro
+      - ./configs:/app/configs:ro
+      - detection-output:/app/outputs
     environment:
-      - TZ=America/New_York
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      TZ: ${TZ:-UTC}
     restart: unless-stopped
-    networks:
-      - graffiti-net
-    depends_on:
-      - api
 
-networks:
-  graffiti-net:
-    driver: bridge
+volumes:
+  detection-output:

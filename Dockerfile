@@ -1,34 +1,40 @@
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+FROM python:3.11-slim
 
-LABEL maintainer="Pierre-Henry Soria"
-LABEL description="AI-Powered Real-Time Graffiti Detection System"
+LABEL org.opencontainers.image.title="Graffiti Detection AI Model" \
+      org.opencontainers.image.description="YOLOv8 graffiti detection API and surveillance tools" \
+      org.opencontainers.image.source="https://github.com/EfficientTools/graffiti-detection-ai-model" \
+      org.opencontainers.image.licenses="MIT"
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y curl libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+COPY pyproject.toml README.md LICENSE ./
+COPY graffiti_detection ./graffiti_detection
+COPY src ./src
 
-# Copy application code
-COPY . .
+RUN python -m pip install --upgrade pip \
+    && python -m pip install ".[all]"
 
-# Create necessary directories
-RUN mkdir -p models outputs/detections logs
+COPY api ./api
+COPY scripts ./scripts
+COPY configs ./configs
 
-# Expose API port
+RUN useradd --create-home --uid 10001 appuser \
+    && mkdir -p models outputs/detections outputs/logs \
+    && chown -R appuser:appuser /app
+
+USER appuser
+
 EXPOSE 8000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8000/ || exit 1
+  CMD ["curl", "--fail", "--silent", "--show-error", "http://localhost:8000/"]
 
-# Default command (can be overridden)
 CMD ["uvicorn", "api.graffiti_detector:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -7,14 +7,13 @@ The repository ships a Docker image for the FastAPI service and an optional Comp
 ```bash
 docker build -t graffiti-detection-ai:1.3.0 .
 docker run --rm \
-  --gpus all \
   -p 8000:8000 \
   -v "$(pwd)/models:/app/models:ro" \
-  -v "$(pwd)/outputs:/app/outputs" \
+  -v graffiti-detection-output:/app/outputs \
   graffiti-detection-ai:1.3.0
 ```
 
-Remove `--gpus all` to run on CPU. Check service health at `http://localhost:8000/`.
+The default image is portable and CPU-compatible. GPU deployments should use a PyTorch base image that matches the host CUDA runtime. Check service health at `http://localhost:8000/`.
 
 ## Docker Compose
 
