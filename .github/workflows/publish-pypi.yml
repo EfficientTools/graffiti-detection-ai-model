@@ -1,14 +1,18 @@
 name: Release
 
 on:
-  push:
-    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version without the v prefix
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.version }}
   cancel-in-progress: false
 
 jobs:
@@ -29,17 +33,32 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
 
-      - name: Verify release tag
+      - name: Verify release version
         shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          package_version=$(python -c 'import runpy; print(runpy.run_path("graffiti_detection/_version.py")["__version__"])')
-          tag_version=${GITHUB_REF_NAME#v}
-          test "$tag_version" = "$package_version" || {
-            echo "Tag $tag_version does not match package $package_version" >&2
+          test "$GITHUB_REF" = "refs/heads/main" || {
+            echo "Releases must be dispatched from main" >&2
             exit 1
           }
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "Version must use MAJOR.MINOR.PATCH format" >&2
+            exit 1
+          }
+          package_version=$(python -c 'import runpy; print(runpy.run_path("graffiti_detection/_version.py")["__version__"])')
+          test "$RELEASE_VERSION" = "$package_version" || {
+            echo "Requested $RELEASE_VERSION does not match package $package_version" >&2
+            exit 1
+          }
+          if git rev-parse "v$RELEASE_VERSION" >/dev/null 2>&1; then
+            test "$(git rev-list -n 1 "v$RELEASE_VERSION")" = "$GITHUB_SHA" || {
+              echo "Tag v$RELEASE_VERSION points to another commit" >&2
+              exit 1
+            }
+          fi
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main || {
-            echo "Release commit is not on main" >&2
+            echo "Release commit is not on origin/main" >&2
             exit 1
           }
 
@@ -106,12 +125,13 @@ jobs:
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v${{ inputs.version }}
         run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" dist/* --clobber
           else
-            gh release create "$GITHUB_REF_NAME" dist/* \
-              --verify-tag \
+            gh release create "$RELEASE_TAG" dist/* \
               --generate-notes \
-              --title "$GITHUB_REF_NAME"
+              --target "$GITHUB_SHA" \
+              --title "$RELEASE_TAG"
           fi
