@@ -3,16 +3,14 @@ Unit tests for alert system
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-import json
-import numpy as np
+from unittest.mock import Mock, patch
 
 from src.utils.alerts import (
     AlertManager,
-    EmailAlert,
-    WebhookAlert,
     DiscordAlert,
-    SlackAlert
+    PushNotificationAlert,
+    SlackAlert,
+    WebhookAlert,
 )
 
 
@@ -26,7 +24,8 @@ class TestAlertManager(unittest.TestCase):
             'sms': {'enabled': False},
             'webhook': {'enabled': False},
             'discord': {'enabled': False},
-            'slack': {'enabled': False}
+            'slack': {'enabled': False},
+            'push_notification': {'enabled': False},
         }
         
         manager = AlertManager(config)
@@ -50,12 +49,24 @@ class TestAlertManager(unittest.TestCase):
                 'enabled': True,
                 'url': 'https://test.com/webhook',
                 'headers': {}
+            },
+            'push_notification': {
+                'enabled': True,
+                'provider': 'onesignal',
+                'api_key': 'test-key',
+                'app_id': 'test-app',
             }
         }
         
         manager = AlertManager(config)
         
-        self.assertGreater(len(manager.alert_channels), 0)
+        self.assertEqual(len(manager.alert_channels), 3)
+        self.assertTrue(
+            any(
+                isinstance(channel, PushNotificationAlert)
+                for channel in manager.alert_channels
+            )
+        )
 
 
 class TestWebhookAlert(unittest.TestCase):

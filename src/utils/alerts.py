@@ -3,18 +3,17 @@ Alert Management System for Graffiti Detection
 Supports email, SMS, webhooks, Discord, Slack, and push notifications
 """
 
-import json
 import smtplib
-import requests
-from datetime import datetime
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict
 
 import cv2
-import numpy as np
+import requests
+
+
+REQUEST_TIMEOUT_SECONDS = 10
 
 
 class AlertManager:
@@ -39,6 +38,11 @@ class AlertManager:
         
         if config.get('slack', {}).get('enabled'):
             self.alert_channels.append(SlackAlert(config['slack']))
+
+        if config.get('push_notification', {}).get('enabled'):
+            self.alert_channels.append(
+                PushNotificationAlert(config['push_notification'])
+            )
     
     def send_alert(self, detection_data: Dict):
         """Send alert through all enabled channels"""
@@ -92,7 +96,11 @@ class EmailAlert:
             msg.attach(image)
         
         # Send email
-        with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+        with smtplib.SMTP(
+            self.smtp_server,
+            self.smtp_port,
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        ) as server:
             server.starttls()
             server.login(self.username, self.password)
             server.send_message(msg)
@@ -117,16 +125,18 @@ class SMSAlert:
                   f"Time: {detection_data['timestamp']}\n"
                   f"Confidence: {max(detection_data['confidences']):.0%}")
         
-        if self.provider == 'twilio':
-            from twilio.rest import Client
-            client = Client(self.account_sid, self.auth_token)
-            
-            for number in self.to_numbers:
-                client.messages.create(
-                    body=message,
-                    from_=self.from_number,
-                    to=number
-                )
+        if self.provider != 'twilio':
+            raise ValueError(f"Unsupported SMS provider: {self.provider}")
+
+        from twilio.rest import Client
+
+        client = Client(self.account_sid, self.auth_token)
+        for number in self.to_numbers:
+            client.messages.create(
+                body=message,
+                from_=self.from_number,
+                to=number
+            )
         
         print(f"[INFO] SMS alert sent to {len(self.to_numbers)} recipients")
 
@@ -158,7 +168,7 @@ class WebhookAlert:
             self.url,
             json=payload,
             headers=self.headers,
-            timeout=10
+            timeout=REQUEST_TIMEOUT_SECONDS
         )
         
         response.raise_for_status()
@@ -189,16 +199,25 @@ class DiscordAlert:
         payload = {"embeds": [embed]}
         
         # Send without image first
-        response = requests.post(self.webhook_url, json=payload)
+        response = requests.post(
+            self.webhook_url,
+            json=payload,
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
         response.raise_for_status()
         
         # Send image if enabled
         if self.include_image and 'frame' in detection_data:
             _, buffer = cv2.imencode('.jpg', detection_data['frame'])
             files = {'file': ('detection.jpg', buffer.tobytes(), 'image/jpeg')}
-            requests.post(self.webhook_url, files=files)
+            image_response = requests.post(
+                self.webhook_url,
+                files=files,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
+            image_response.raise_for_status()
         
-        print(f"[INFO] Discord alert sent")
+        print("[INFO] Discord alert sent")
 
 
 class SlackAlert:
@@ -229,7 +248,11 @@ class SlackAlert:
             ]
         }
         
-        response = requests.post(self.webhook_url, json=payload)
+        response = requests.post(
+            self.webhook_url,
+            json=payload,
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
         response.raise_for_status()
         
         print(f"[INFO] Slack alert sent to {self.channel}")
@@ -245,29 +268,32 @@ class PushNotificationAlert:
     
     def send(self, detection_data: Dict):
         """Send push notification"""
-        # Implementation depends on provider
-        # Example for OneSignal
-        if self.provider == 'onesignal':
-            payload = {
-                "app_id": self.app_id,
-                "included_segments": ["All"],
-                "headings": {"en": "Graffiti Detected!"},
-                "contents": {
-                    "en": f"Camera {detection_data['camera_id']} detected graffiti at {detection_data['timestamp']}"
-                },
-                "priority": 10
-            }
-            
-            headers = {
-                "Authorization": f"Basic {self.api_key}",
-                "Content-Type": "application/json"
-            }
-            
-            response = requests.post(
-                "https://onesignal.com/api/v1/notifications",
-                json=payload,
-                headers=headers
+        if self.provider != 'onesignal':
+            raise ValueError(
+                f"Unsupported push notification provider: {self.provider}"
             )
-            
-            response.raise_for_status()
-            print(f"[INFO] Push notification sent")
+
+        payload = {
+            "app_id": self.app_id,
+            "included_segments": ["All"],
+            "headings": {"en": "Graffiti Detected!"},
+            "contents": {
+                "en": (
+                    f"Camera {detection_data['camera_id']} detected graffiti "
+                    f"at {detection_data['timestamp']}"
+                )
+            },
+            "priority": 10
+        }
+        headers = {
+            "Authorization": f"Basic {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        response = requests.post(
+            "https://onesignal.com/api/v1/notifications",
+            json=payload,
+            headers=headers,
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
+        response.raise_for_status()
+        print("[INFO] Push notification sent")
