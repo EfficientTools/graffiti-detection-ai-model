@@ -1,3 +1,23 @@
-"""Compatibility wrapper for augmentation utilities."""
+"""Public augmentation utilities."""
 
-from src.data.augmentation import *  # noqa: F401,F403
+from src.data.augmentation import (
+    AUGMENTATION_PRESETS,
+    get_augmentation_by_preset,
+    get_inference_transform,
+    get_mosaic_augmentation,
+    get_street_scene_augmentation,
+    get_test_augmentation,
+    get_training_augmentation,
+    get_validation_augmentation,
+)
+
+__all__ = [
+    "AUGMENTATION_PRESETS",
+    "get_augmentation_by_preset",
+    "get_inference_transform",
+    "get_mosaic_augmentation",
+    "get_street_scene_augmentation",
+    "get_test_augmentation",
+    "get_training_augmentation",
+    "get_validation_augmentation",
+]

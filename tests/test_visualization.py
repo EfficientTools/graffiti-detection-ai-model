@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import cv2
 
-from src.utils.visualization import (
+from graffiti_detection.utils.visualization import (
     draw_boxes,
     visualize_detection,
     save_detection_crops

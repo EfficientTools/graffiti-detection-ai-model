@@ -1,3 +1,21 @@
-"""Compatibility wrapper for alert utilities."""
+"""Public alert-channel utilities."""
 
-from src.utils.alerts import *  # noqa: F401,F403
+from src.utils.alerts import (
+    AlertManager,
+    DiscordAlert,
+    EmailAlert,
+    PushNotificationAlert,
+    SlackAlert,
+    SMSAlert,
+    WebhookAlert,
+)
+
+__all__ = [
+    "AlertManager",
+    "DiscordAlert",
+    "EmailAlert",
+    "PushNotificationAlert",
+    "SlackAlert",
+    "SMSAlert",
+    "WebhookAlert",
+]

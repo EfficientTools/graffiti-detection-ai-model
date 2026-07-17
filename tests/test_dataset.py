@@ -11,9 +11,13 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from src.data.dataset import GraffitiDataset, create_dataloaders
-from src.data.augmentation import get_validation_augmentation
-from src.data.preprocessing import letterbox, preprocess_image, postprocess_boxes
+from graffiti_detection.data.augmentation import get_validation_augmentation
+from graffiti_detection.data.dataset import GraffitiDataset, create_dataloaders
+from graffiti_detection.data.preprocessing import (
+    letterbox,
+    postprocess_boxes,
+    preprocess_image,
+)
 
 
 class TestGraffitiDataset(unittest.TestCase):

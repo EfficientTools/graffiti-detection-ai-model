@@ -5,7 +5,7 @@ Unit tests for evaluation metrics
 import unittest
 import numpy as np
 
-from src.evaluation.metrics import (
+from graffiti_detection.evaluation.metrics import (
     calculate_iou,
     calculate_ap,
     calculate_map,

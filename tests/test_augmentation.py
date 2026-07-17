@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import cv2
 
-from src.data.augmentation import (
+from graffiti_detection.data.augmentation import (
     get_training_augmentation,
     get_validation_augmentation,
     get_inference_transform,

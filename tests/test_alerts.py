@@ -5,7 +5,7 @@ Unit tests for alert system
 import unittest
 from unittest.mock import Mock, patch
 
-from src.utils.alerts import (
+from graffiti_detection.utils.alerts import (
     AlertManager,
     DiscordAlert,
     PushNotificationAlert,

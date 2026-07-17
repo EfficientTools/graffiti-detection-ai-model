@@ -1,3 +1,15 @@
-"""Compatibility wrapper for dataset utilities."""
+"""Public dataset utilities."""
 
-from src.data.dataset import *  # noqa: F401,F403
+from src.data.dataset import (
+    GraffitiDataset,
+    create_dataloaders,
+    get_label_path_from_image_path,
+    load_image_paths_from_file,
+)
+
+__all__ = [
+    "GraffitiDataset",
+    "create_dataloaders",
+    "get_label_path_from_image_path",
+    "load_image_paths_from_file",
+]

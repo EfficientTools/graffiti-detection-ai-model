@@ -25,14 +25,14 @@ import numpy as np
 import pytest
 import yaml
 
-from src.data.augmentation import (
+from graffiti_detection.data.augmentation import (
     get_street_scene_augmentation,
     get_training_augmentation,
     get_validation_augmentation,
     get_augmentation_by_preset,
     AUGMENTATION_PRESETS,
 )
-from src.data.preprocessing import (
+from graffiti_detection.data.preprocessing import (
     letterbox,
     preprocess_image,
     preprocess_street_scene,
@@ -41,8 +41,8 @@ from src.data.preprocessing import (
     apply_clahe,
     simulate_street_conditions,
 )
-from src.data.dataset import GraffitiDataset
-from src.evaluation.metrics import (
+from graffiti_detection.data.dataset import GraffitiDataset
+from graffiti_detection.evaluation.metrics import (
     calculate_iou,
     calculate_ap,
     calculate_map,
