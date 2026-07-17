@@ -9,7 +9,7 @@ from graffiti_detection.evaluation.metrics import calculate_iou
 
 def test_public_detector_class_is_importable():
     assert GraffitiDetector.__name__ == "GraffitiDetector"
-    assert __version__ == "0.1.2"
+    assert __version__ == "0.1.3"
 
 
 def test_public_metrics_namespace_works():
