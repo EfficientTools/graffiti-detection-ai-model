@@ -1,7 +1,6 @@
 """Public API for the graffiti detection package."""
 
 from graffiti_detection.detector import GraffitiDetector
-
-__version__ = "0.1.2"
+from graffiti_detection._version import __version__
 
 __all__ = ["GraffitiDetector", "__version__"]
