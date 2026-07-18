@@ -19,7 +19,7 @@ COPY pyproject.toml README.md LICENSE ./
 COPY graffiti_detection ./graffiti_detection
 
 RUN python -m pip install --upgrade pip \
-    && python -m pip install ".[all]"
+    && python -m pip install ".[alerts,api]"
 
 COPY api ./api
 COPY scripts ./scripts
@@ -36,4 +36,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD ["curl", "--fail", "--silent", "--show-error", "http://localhost:8000/"]
 
-CMD ["uvicorn", "api.graffiti_detector:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "graffiti_detection.api:app", "--host", "0.0.0.0", "--port", "8000"]
