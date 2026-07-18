@@ -4,11 +4,25 @@ Evaluation script for graffiti detection model.
 """
 
 import argparse
+import importlib.metadata
 import json
+import platform
+import sys
 from pathlib import Path
 
 import torch
 from ultralytics import YOLO
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from graffiti_detection.evaluation.report import (  # noqa: E402
+    EvaluationGates,
+    build_evaluation_report,
+    normalize_metrics,
+    normalize_numeric_mapping,
+)
 
 
 def parse_args():
@@ -64,16 +78,37 @@ def parse_args():
 
     parser.add_argument("--verbose", action="store_true", help="Verbose output")
 
+    parser.add_argument("--min-map50", type=float, help="Fail below this mAP@0.5")
+    parser.add_argument("--min-map50-95", type=float, help="Fail below this mAP@0.5:0.95")
+    parser.add_argument("--min-precision", type=float, help="Fail below this precision")
+    parser.add_argument("--min-recall", type=float, help="Fail below this recall")
+    parser.add_argument(
+        "--max-inference-ms",
+        type=float,
+        help="Fail when mean inference latency per image exceeds this value",
+    )
+
     return parser.parse_args()
 
 
-def main():
+def main() -> int:
     """Main evaluation function."""
     args = parse_args()
 
-    # Check if model file exists
-    if not Path(args.model).exists():
+    model_path = Path(args.model).expanduser().resolve()
+    data_path = Path(args.data).expanduser().resolve()
+    if not model_path.is_file():
         raise FileNotFoundError(f"Model file not found: {args.model}")
+    if not data_path.is_file():
+        raise FileNotFoundError(f"Dataset configuration not found: {args.data}")
+
+    gates = EvaluationGates(
+        min_map50=args.min_map50,
+        min_map50_95=args.min_map50_95,
+        min_precision=args.min_precision,
+        min_recall=args.min_recall,
+        max_inference_ms=args.max_inference_ms,
+    )
 
     # Check if GPU is available
     if torch.cuda.is_available():
@@ -84,7 +119,7 @@ def main():
 
     # Load model
     print(f"Loading model from {args.model}")
-    model = YOLO(args.model)
+    model = YOLO(str(model_path))
 
     # Print evaluation configuration
     print("\n" + "=" * 50)
@@ -127,22 +162,23 @@ def main():
     print("Evaluation Results:")
     print("=" * 50)
 
-    metrics = results.results_dict
+    raw_metrics = normalize_numeric_mapping(results.results_dict)
+    metrics = normalize_metrics(raw_metrics)
 
     # Detection metrics
-    if "metrics/mAP50(B)" in metrics:
-        print(f"mAP@0.5: {metrics['metrics/mAP50(B)']:.4f}")
-    if "metrics/mAP50-95(B)" in metrics:
-        print(f"mAP@0.5:0.95: {metrics['metrics/mAP50-95(B)']:.4f}")
-    if "metrics/precision(B)" in metrics:
-        print(f"Precision: {metrics['metrics/precision(B)']:.4f}")
-    if "metrics/recall(B)" in metrics:
-        print(f"Recall: {metrics['metrics/recall(B)']:.4f}")
+    if "map50" in metrics:
+        print(f"mAP@0.5: {metrics['map50']:.4f}")
+    if "map50_95" in metrics:
+        print(f"mAP@0.5:0.95: {metrics['map50_95']:.4f}")
+    if "precision" in metrics:
+        print(f"Precision: {metrics['precision']:.4f}")
+    if "recall" in metrics:
+        print(f"Recall: {metrics['recall']:.4f}")
 
     # Calculate F1 score
-    if "metrics/precision(B)" in metrics and "metrics/recall(B)" in metrics:
-        precision = metrics["metrics/precision(B)"]
-        recall = metrics["metrics/recall(B)"]
+    if "precision" in metrics and "recall" in metrics:
+        precision = metrics["precision"]
+        recall = metrics["recall"]
         if precision + recall > 0:
             f1_score = 2 * (precision * recall) / (precision + recall)
             print(f"F1-Score: {f1_score:.4f}")
@@ -155,9 +191,36 @@ def main():
 
     metrics_file = output_dir / "metrics.json"
     with open(metrics_file, "w") as f:
-        json.dump(metrics, f, indent=4)
+        json.dump(raw_metrics, f, indent=2, sort_keys=True)
+
+    speed_ms = normalize_numeric_mapping(getattr(results, "speed", {}))
+    report = build_evaluation_report(
+        model_path=model_path,
+        data_path=data_path,
+        metrics=metrics,
+        speed_ms=speed_ms,
+        evaluation_config={
+            "split": args.split,
+            "batch_size": args.batch_size,
+            "image_size": args.img_size,
+            "confidence_threshold": args.conf_threshold,
+            "iou_threshold": args.iou_threshold,
+            "device": args.device,
+        },
+        gates=gates,
+        environment={
+            "python": platform.python_version(),
+            "platform": platform.platform(),
+            "torch": torch.__version__,
+            "ultralytics": importlib.metadata.version("ultralytics"),
+        },
+    )
+    report_file = output_dir / "evaluation-report.json"
+    with report_file.open("w") as file:
+        json.dump(report, file, indent=2, sort_keys=True)
 
     print(f"Metrics saved to: {metrics_file}")
+    print(f"Reproducible report saved to: {report_file}")
     print(f"Results saved to: {output_dir}")
 
     # Per-class metrics if available
@@ -172,8 +235,18 @@ def main():
             print(f"  AP@0.5: {ap50:.4f}")
             print(f"  AP@0.5:0.95: {ap:.4f}")
 
+    failures = report["quality_gates"]["failures"]
+    if failures:
+        print("\nEvaluation quality gates failed:")
+        for failure in failures:
+            print(f"  - {failure}")
+        return 1
+
+    if gates.is_configured:
+        print("\nAll evaluation quality gates passed.")
     print("\nEvaluation completed!")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
