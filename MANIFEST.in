@@ -1,0 +1,3 @@
+include scripts/export_coreml.py
+prune src
+prune tests
