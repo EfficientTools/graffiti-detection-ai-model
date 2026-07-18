@@ -1,0 +1,104 @@
+name: Apple Client
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ios/GraffitiGuard/**
+      - scripts/export_coreml.py
+      - pyproject.toml
+      - .github/workflows/ios.yml
+  pull_request:
+    paths:
+      - ios/GraffitiGuard/**
+      - scripts/export_coreml.py
+      - pyproject.toml
+      - .github/workflows/ios.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apple-client-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test iPhone and iPad app
+    runs-on: macos-26
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Show Apple toolchain
+        run: xcodebuild -version
+
+      - name: Check Swift formatting
+        run: |
+          xcrun swift-format lint \
+            --strict \
+            --recursive \
+            --configuration ios/GraffitiGuard/.swift-format \
+            ios/GraffitiGuard/GraffitiGuard \
+            ios/GraffitiGuard/GraffitiGuardTests
+
+      - name: Build universal simulator app
+        run: |
+          xcodebuild \
+            -project ios/GraffitiGuard/GraffitiGuard.xcodeproj \
+            -scheme GraffitiGuard \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath /tmp/GraffitiGuardBuildDerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+
+      - name: Build unsigned release app
+        run: |
+          xcodebuild \
+            -project ios/GraffitiGuard/GraffitiGuard.xcodeproj \
+            -scheme GraffitiGuard \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath /tmp/GraffitiGuardReleaseDerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+
+      - name: Select test simulator
+        shell: bash
+        run: |
+          device_id=$(xcrun simctl list devices available --json | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          print(next(
+              device["udid"]
+              for runtime in devices.values()
+              for device in runtime
+              if device.get("isAvailable") and device["name"].startswith("iPhone")
+          ))
+          ')
+          test -n "$device_id"
+          echo "TEST_DEVICE_ID=$device_id" >> "$GITHUB_ENV"
+
+      - name: Run unit tests
+        run: |
+          xcodebuild \
+            -project ios/GraffitiGuard/GraffitiGuard.xcodeproj \
+            -scheme GraffitiGuard \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=$TEST_DEVICE_ID" \
+            -derivedDataPath /tmp/GraffitiGuardTestDerivedData \
+            -resultBundlePath /tmp/GraffitiGuardTests.xcresult \
+            -enableCodeCoverage YES \
+            test
+
+      - name: Upload test result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: GraffitiGuardTests
+          path: /tmp/GraffitiGuardTests.xcresult
+          if-no-files-found: ignore
