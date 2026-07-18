@@ -1,6 +1,12 @@
 # Graffiti Detection AI Model
 
 <p align="center">
+  <a href="https://apps.apple.com/app/id6792218806" title="Download Graffiti Guard on the App Store">
+    <img src="https://raw.githubusercontent.com/EfficientTools/graffiti-detection-ai-model/main/ios/GraffitiGuard/GraffitiGuard/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png" alt="Graffiti Guard app icon" width="96" />
+  </a>
+</p>
+
+<p align="center">
   <img src="https://raw.githubusercontent.com/EfficientTools/graffiti-detection-ai-model/main/assets/graffiti-detection-logo.svg" alt="Graffiti Detection AI logo" width="780" />
 </p>
 
