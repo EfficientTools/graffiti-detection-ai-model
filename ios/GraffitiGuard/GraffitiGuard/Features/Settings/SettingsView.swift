@@ -30,6 +30,13 @@ struct SettingsView: View {
                     Text("Graffiti Guard uses a bundled Core ML model. No inference server or account is required.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+
+                    LabeledContent("Model license", value: "MIT")
+                    Text(
+                        "One-class graffiti detector published by khoaliamle and converted to Core ML for offline use."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                 }
 
                 Section("Confidence") {

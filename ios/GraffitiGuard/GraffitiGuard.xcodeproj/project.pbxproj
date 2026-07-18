@@ -15,6 +15,7 @@
 		40AA2D451E35836146E3EC05 /* GraffitiGuardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082B691AF99D975D63B09E9A /* GraffitiGuardApp.swift */; };
 		44A1F3E015FDC4E1327E421E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A5A370FDE5F9329EA48E3D /* SettingsView.swift */; };
 		7EEB5CC6777D81299D4D9929 /* DetectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 981EB775583494F3B43F8403 /* DetectionScreen.swift */; };
+		890D9D5672AC2979D2DE09EE /* GraffitiDetector.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = F96633A536C9C69CFD72AAAC /* GraffitiDetector.mlpackage */; };
 		91D255475D88F524D8B2A12A /* OnDeviceGraffitiDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4BFDB2A9DE062B26553964 /* OnDeviceGraffitiDetector.swift */; };
 		A3F2E91BE347E86B3B1767F7 /* DetectionOverlayLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1509D80C54ACF6084DD75108 /* DetectionOverlayLayout.swift */; };
 		AADAC5E788EA3FC468FACF4F /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6210F941D084AE9C60C7454A /* CameraPicker.swift */; };
@@ -50,6 +51,7 @@
 		AF4BFDB2A9DE062B26553964 /* OnDeviceGraffitiDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceGraffitiDetector.swift; sourceTree = "<group>"; };
 		C312DB3250ECAD9B58175773 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DB3C10C2DAE5BFB313E90D3B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F96633A536C9C69CFD72AAAC /* GraffitiDetector.mlpackage */ = {isa = PBXFileReference; path = GraffitiDetector.mlpackage; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -58,6 +60,7 @@
 			children = (
 				C312DB3250ECAD9B58175773 /* Assets.xcassets */,
 				DB3C10C2DAE5BFB313E90D3B /* PrivacyInfo.xcprivacy */,
+				ED7A5BA2A541E8AF8A092CDA /* Models */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -170,6 +173,14 @@
 			path = Core;
 			sourceTree = "<group>";
 		};
+		ED7A5BA2A541E8AF8A092CDA /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F96633A536C9C69CFD72AAAC /* GraffitiDetector.mlpackage */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		EF1A21D740C9A396DAE30265 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -280,6 +291,7 @@
 				A3F2E91BE347E86B3B1767F7 /* DetectionOverlayLayout.swift in Sources */,
 				7EEB5CC6777D81299D4D9929 /* DetectionScreen.swift in Sources */,
 				0E8937D685FB88CDE9DF63D8 /* DetectionViewModel.swift in Sources */,
+				890D9D5672AC2979D2DE09EE /* GraffitiDetector.mlpackage in Sources */,
 				40AA2D451E35836146E3EC05 /* GraffitiGuardApp.swift in Sources */,
 				AB35743B0B561480D9113BF1 /* ImagePreparer.swift in Sources */,
 				91D255475D88F524D8B2A12A /* OnDeviceGraffitiDetector.swift in Sources */,

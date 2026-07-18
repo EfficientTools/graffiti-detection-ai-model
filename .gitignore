@@ -64,6 +64,7 @@ data/labels/*
 *.tiff
 *.webp
 !ios/GraffitiGuard/GraffitiGuard/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
+!ios/GraffitiGuard/GraffitiGuard/Resources/Assets.xcassets/DemoStreet.imageset/DemoStreet.png
 
 # Models
 models/*.pt
@@ -77,6 +78,8 @@ models/*.tflite
 *.mlmodel
 *.mlpackage/
 *.mlmodelc/
+!ios/GraffitiGuard/GraffitiGuard/Resources/Models/GraffitiDetector.mlpackage/
+!ios/GraffitiGuard/GraffitiGuard/Resources/Models/GraffitiDetector.mlpackage/**
 
 # Outputs
 outputs/detections/

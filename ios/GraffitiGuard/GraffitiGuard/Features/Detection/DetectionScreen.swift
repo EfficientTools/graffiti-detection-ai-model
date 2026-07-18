@@ -8,6 +8,7 @@ struct DetectionScreen: View {
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var showsCamera = false
     @State private var showsSettings = false
+    @State private var didLoadStorePreview = false
 
     private var cameraIsAvailable: Bool {
         UIImagePickerController.isSourceTypeAvailable(.camera)
@@ -79,6 +80,27 @@ struct DetectionScreen: View {
                     selectedPhoto = nil
                 }
             }
+            .task {
+                guard !didLoadStorePreview else { return }
+
+                let arguments = ProcessInfo.processInfo.arguments
+                if arguments.contains("-settingsScreenshotMode") {
+                    didLoadStorePreview = true
+                    try? await Task.sleep(for: .milliseconds(500))
+                    showsSettings = true
+                    return
+                }
+
+                guard
+                    arguments.contains("-screenshotMode")
+                        || arguments.contains("-readyScreenshotMode")
+                else { return }
+
+                didLoadStorePreview = true
+                viewModel.loadSample()
+                guard arguments.contains("-screenshotMode") else { return }
+                await viewModel.detect(threshold: confidenceThreshold)
+            }
         }
         .tint(.guardGreen)
     }
@@ -125,6 +147,14 @@ struct DetectionScreen: View {
                 .disabled(!cameraIsAvailable)
                 .accessibilityHint(cameraIsAvailable ? "Capture a photo" : "Camera unavailable on this device")
             }
+
+            Button {
+                viewModel.loadSample()
+            } label: {
+                Label("Try sample scene", systemImage: "building.2.crop.circle")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
         }
         .padding(14)
         .guardCard()
@@ -197,7 +227,7 @@ struct DetectionScreen: View {
                 icon: "viewfinder",
                 color: .guardCyan,
                 title: "Ready when you are",
-                message: "Choose one image to begin."
+                message: "Choose an image or try the sample scene."
             )
         case .modelUnavailable:
             StatusHeader(
