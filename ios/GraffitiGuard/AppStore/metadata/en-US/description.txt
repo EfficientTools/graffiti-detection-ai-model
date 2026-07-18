@@ -2,7 +2,9 @@ Detect likely graffiti in photos and camera captures without uploading images.
 
 Graffiti Guard is designed for residents, field teams, councils, and maintenance crews that need a quick, private first review. Its bundled Core ML model runs entirely on your iPhone or iPad and highlights likely graffiti for human verification.
 
-The iPad workflow is built for inspections: drop in a photo, adjust confidence, review highlighted regions, then share a referenced summary with the result, confidence, and processing time.
+The iPad workflow is built for inspections: drop in a photo, adjust confidence, review highlighted regions, then share a referenced summary with the result, confidence, processing time, and recommended next step.
+
+Graffiti Guard is designed to shorten the first-review and handoff steps. On-device processing avoids image uploads and inference-server dependency, while consistent references help teams route visible incidents. Actual time or cost savings depend on each organisation's workflow and should be measured in a pilot.
 
 Why it exists
 
@@ -13,7 +15,7 @@ Key features:
 - No inference server, account, or internet connection required
 - Camera, photo-library, and iPad drag-and-drop support
 - Adjustable confidence threshold
-- Shareable inspection summaries
+- Shareable inspection summaries with clear next steps
 - Universal iPhone and iPad interface
 
 Created by Pierre-Henry Soria, an AI software engineer and consultant building practical computer vision systems.
