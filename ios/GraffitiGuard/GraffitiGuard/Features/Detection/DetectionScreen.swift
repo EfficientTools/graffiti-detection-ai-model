@@ -158,7 +158,9 @@ struct DetectionScreen: View {
     }
 
     private var scannerCard: some View {
-        VStack(spacing: 14) {
+        let photoIsLoading = isLoadingPhoto
+
+        return VStack(spacing: 14) {
             ZStack {
                 DetectionCanvas(image: viewModel.image, report: viewModel.report)
 
@@ -173,7 +175,7 @@ struct DetectionScreen: View {
             HStack(spacing: 12) {
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
                     HStack(spacing: 8) {
-                        if isLoadingPhoto {
+                        if photoIsLoading {
                             ProgressView()
                                 .controlSize(.small)
                             Text("Loading")
