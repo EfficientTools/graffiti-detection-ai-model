@@ -1,0 +1,68 @@
+name: GraffitiGuard
+
+options:
+  bundleIdPrefix: dev.pierrehenry
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "17.0"
+
+settings:
+  base:
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_VERSION: "6.0"
+
+targets:
+  GraffitiGuard:
+    type: application
+    platform: iOS
+    sources:
+      - path: GraffitiGuard
+        excludes:
+          - Resources/Info.plist
+          - Resources/Models/.gitkeep
+    info:
+      path: GraffitiGuard/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Graffiti Guard
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
+        LSApplicationCategoryType: public.app-category.utilities
+        NSCameraUsageDescription: Graffiti Guard uses the camera to capture scenes for graffiti detection.
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        "UISupportedInterfaceOrientations~ipad":
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CURRENT_PROJECT_VERSION: 1
+        DEVELOPMENT_TEAM: 2V8LZ2444Y
+        MARKETING_VERSION: 1.0
+        PRODUCT_BUNDLE_IDENTIFIER: dev.pierrehenry.GraffitiGuard
+        PRODUCT_NAME: GraffitiGuard
+        SUPPORTS_MACCATALYST: NO
+        TARGETED_DEVICE_FAMILY: "1,2"
+    scheme:
+      testTargets:
+        - GraffitiGuardTests
+
+  GraffitiGuardTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - GraffitiGuardTests
+    dependencies:
+      - target: GraffitiGuard
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: dev.pierrehenry.GraffitiGuardTests

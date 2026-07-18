@@ -1,0 +1,543 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0022F78BD4573897121C2422 /* DetectionCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479E486C152D51C00EC8EB4F /* DetectionCanvas.swift */; };
+		0E8937D685FB88CDE9DF63D8 /* DetectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616035E27EE588F56ED55F2F /* DetectionViewModel.swift */; };
+		15DF1E3413FA3594085E0280 /* DetectionCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451F0202F10EB0CE4EF3A2A2 /* DetectionCoreTests.swift */; };
+		275226E0F2A35645ECCE0435 /* DetectionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC72DBD471E53D01530AFC0 /* DetectionModels.swift */; };
+		316E6D32C6A3234DC29D620E /* BrandStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3086DFAED3C5F63DFD57F152 /* BrandStyle.swift */; };
+		40AA2D451E35836146E3EC05 /* GraffitiGuardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082B691AF99D975D63B09E9A /* GraffitiGuardApp.swift */; };
+		44A1F3E015FDC4E1327E421E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A5A370FDE5F9329EA48E3D /* SettingsView.swift */; };
+		7EEB5CC6777D81299D4D9929 /* DetectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 981EB775583494F3B43F8403 /* DetectionScreen.swift */; };
+		91D255475D88F524D8B2A12A /* OnDeviceGraffitiDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4BFDB2A9DE062B26553964 /* OnDeviceGraffitiDetector.swift */; };
+		A3F2E91BE347E86B3B1767F7 /* DetectionOverlayLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1509D80C54ACF6084DD75108 /* DetectionOverlayLayout.swift */; };
+		AADAC5E788EA3FC468FACF4F /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6210F941D084AE9C60C7454A /* CameraPicker.swift */; };
+		AB35743B0B561480D9113BF1 /* ImagePreparer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D0C2C61203BCD2B98F4C825 /* ImagePreparer.swift */; };
+		D33A391460E2EA910B648154 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C312DB3250ECAD9B58175773 /* Assets.xcassets */; };
+		EB350DE8AAF86E72D56D692D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DB3C10C2DAE5BFB313E90D3B /* PrivacyInfo.xcprivacy */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2CBFB58F7FBDEF4815A5EDAE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8A0B74EE43129438A6C9A978 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1BB59A473CFBF0B11060BA21;
+			remoteInfo = GraffitiGuard;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		082B691AF99D975D63B09E9A /* GraffitiGuardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraffitiGuardApp.swift; sourceTree = "<group>"; };
+		1509D80C54ACF6084DD75108 /* DetectionOverlayLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionOverlayLayout.swift; sourceTree = "<group>"; };
+		3086DFAED3C5F63DFD57F152 /* BrandStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandStyle.swift; sourceTree = "<group>"; };
+		3AC61C5656DBB46382B0A48F /* GraffitiGuard.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GraffitiGuard.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		41CBE93ADD380FD2696E10EA /* GraffitiGuardTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GraffitiGuardTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		451F0202F10EB0CE4EF3A2A2 /* DetectionCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionCoreTests.swift; sourceTree = "<group>"; };
+		479E486C152D51C00EC8EB4F /* DetectionCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionCanvas.swift; sourceTree = "<group>"; };
+		616035E27EE588F56ED55F2F /* DetectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionViewModel.swift; sourceTree = "<group>"; };
+		6210F941D084AE9C60C7454A /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
+		6D0C2C61203BCD2B98F4C825 /* ImagePreparer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreparer.swift; sourceTree = "<group>"; };
+		95A5A370FDE5F9329EA48E3D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		981EB775583494F3B43F8403 /* DetectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionScreen.swift; sourceTree = "<group>"; };
+		AEC72DBD471E53D01530AFC0 /* DetectionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionModels.swift; sourceTree = "<group>"; };
+		AF4BFDB2A9DE062B26553964 /* OnDeviceGraffitiDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceGraffitiDetector.swift; sourceTree = "<group>"; };
+		C312DB3250ECAD9B58175773 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DB3C10C2DAE5BFB313E90D3B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		04DC88359E3D5C210F5B8214 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C312DB3250ECAD9B58175773 /* Assets.xcassets */,
+				DB3C10C2DAE5BFB313E90D3B /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		05C941416AAD68143449B5E9 /* Inference */ = {
+			isa = PBXGroup;
+			children = (
+				AF4BFDB2A9DE062B26553964 /* OnDeviceGraffitiDetector.swift */,
+			);
+			path = Inference;
+			sourceTree = "<group>";
+		};
+		27CA578DBF2201899F81CD61 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AEC72DBD471E53D01530AFC0 /* DetectionModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		3D7CFC63B2408987AE1297C0 /* GraffitiGuardTests */ = {
+			isa = PBXGroup;
+			children = (
+				451F0202F10EB0CE4EF3A2A2 /* DetectionCoreTests.swift */,
+			);
+			path = GraffitiGuardTests;
+			sourceTree = "<group>";
+		};
+		4160F5330FD9475C12BEEEA5 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				3086DFAED3C5F63DFD57F152 /* BrandStyle.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		5BDAF9294FE75CEA63CCB5F3 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				71E67A901B11B2400615D165 /* Detection */,
+				94FA46ABB04B9727B181F88A /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		70DDB239A4639F784E722693 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				082B691AF99D975D63B09E9A /* GraffitiGuardApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		71E67A901B11B2400615D165 /* Detection */ = {
+			isa = PBXGroup;
+			children = (
+				6210F941D084AE9C60C7454A /* CameraPicker.swift */,
+				479E486C152D51C00EC8EB4F /* DetectionCanvas.swift */,
+				981EB775583494F3B43F8403 /* DetectionScreen.swift */,
+				616035E27EE588F56ED55F2F /* DetectionViewModel.swift */,
+			);
+			path = Detection;
+			sourceTree = "<group>";
+		};
+		94FA46ABB04B9727B181F88A /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				95A5A370FDE5F9329EA48E3D /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		ACBD9DC64EE38D54CCA85403 = {
+			isa = PBXGroup;
+			children = (
+				CC6091CB274967B39EA51A29 /* GraffitiGuard */,
+				3D7CFC63B2408987AE1297C0 /* GraffitiGuardTests */,
+				EF1A21D740C9A396DAE30265 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AECD777F0A86ABF3C984940D /* Imaging */ = {
+			isa = PBXGroup;
+			children = (
+				1509D80C54ACF6084DD75108 /* DetectionOverlayLayout.swift */,
+				6D0C2C61203BCD2B98F4C825 /* ImagePreparer.swift */,
+			);
+			path = Imaging;
+			sourceTree = "<group>";
+		};
+		CC6091CB274967B39EA51A29 /* GraffitiGuard */ = {
+			isa = PBXGroup;
+			children = (
+				70DDB239A4639F784E722693 /* App */,
+				DBEFCF4F133F027520F5A29D /* Core */,
+				5BDAF9294FE75CEA63CCB5F3 /* Features */,
+				04DC88359E3D5C210F5B8214 /* Resources */,
+				4160F5330FD9475C12BEEEA5 /* Shared */,
+			);
+			path = GraffitiGuard;
+			sourceTree = "<group>";
+		};
+		DBEFCF4F133F027520F5A29D /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				AECD777F0A86ABF3C984940D /* Imaging */,
+				05C941416AAD68143449B5E9 /* Inference */,
+				27CA578DBF2201899F81CD61 /* Models */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		EF1A21D740C9A396DAE30265 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3AC61C5656DBB46382B0A48F /* GraffitiGuard.app */,
+				41CBE93ADD380FD2696E10EA /* GraffitiGuardTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1BB59A473CFBF0B11060BA21 /* GraffitiGuard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5C7BB23A7EBB6A0519010198 /* Build configuration list for PBXNativeTarget "GraffitiGuard" */;
+			buildPhases = (
+				85A2F57F50824F29894443E1 /* Sources */,
+				9D1B303FD9DAFA2AD86E965F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GraffitiGuard;
+			packageProductDependencies = (
+			);
+			productName = GraffitiGuard;
+			productReference = 3AC61C5656DBB46382B0A48F /* GraffitiGuard.app */;
+			productType = "com.apple.product-type.application";
+		};
+		9A21249DE4D45CBD7757A650 /* GraffitiGuardTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D0F5EEEC1B4E550E4F32ED0 /* Build configuration list for PBXNativeTarget "GraffitiGuardTests" */;
+			buildPhases = (
+				C5602F15B59B9C2DEB7B6C12 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DAD0B8E5C6A830A1086AFF8B /* PBXTargetDependency */,
+			);
+			name = GraffitiGuardTests;
+			packageProductDependencies = (
+			);
+			productName = GraffitiGuardTests;
+			productReference = 41CBE93ADD380FD2696E10EA /* GraffitiGuardTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8A0B74EE43129438A6C9A978 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					1BB59A473CFBF0B11060BA21 = {
+						DevelopmentTeam = 2V8LZ2444Y;
+						ProvisioningStyle = Automatic;
+					};
+					9A21249DE4D45CBD7757A650 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 1D32FE1AA989EFAA34EA6D68 /* Build configuration list for PBXProject "GraffitiGuard" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = ACBD9DC64EE38D54CCA85403;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = EF1A21D740C9A396DAE30265 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1BB59A473CFBF0B11060BA21 /* GraffitiGuard */,
+				9A21249DE4D45CBD7757A650 /* GraffitiGuardTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9D1B303FD9DAFA2AD86E965F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D33A391460E2EA910B648154 /* Assets.xcassets in Resources */,
+				EB350DE8AAF86E72D56D692D /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		85A2F57F50824F29894443E1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				316E6D32C6A3234DC29D620E /* BrandStyle.swift in Sources */,
+				AADAC5E788EA3FC468FACF4F /* CameraPicker.swift in Sources */,
+				0022F78BD4573897121C2422 /* DetectionCanvas.swift in Sources */,
+				275226E0F2A35645ECCE0435 /* DetectionModels.swift in Sources */,
+				A3F2E91BE347E86B3B1767F7 /* DetectionOverlayLayout.swift in Sources */,
+				7EEB5CC6777D81299D4D9929 /* DetectionScreen.swift in Sources */,
+				0E8937D685FB88CDE9DF63D8 /* DetectionViewModel.swift in Sources */,
+				40AA2D451E35836146E3EC05 /* GraffitiGuardApp.swift in Sources */,
+				AB35743B0B561480D9113BF1 /* ImagePreparer.swift in Sources */,
+				91D255475D88F524D8B2A12A /* OnDeviceGraffitiDetector.swift in Sources */,
+				44A1F3E015FDC4E1327E421E /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C5602F15B59B9C2DEB7B6C12 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				15DF1E3413FA3594085E0280 /* DetectionCoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DAD0B8E5C6A830A1086AFF8B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1BB59A473CFBF0B11060BA21 /* GraffitiGuard */;
+			targetProxy = 2CBFB58F7FBDEF4815A5EDAE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5B2699A8341002F4E3C28592 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		8029304E59BFB839503C8452 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2V8LZ2444Y;
+				INFOPLIST_FILE = GraffitiGuard/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.pierrehenry.GraffitiGuard;
+				PRODUCT_NAME = GraffitiGuard;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		866BF9AE88872FA4FBEF4529 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		A5CF1F0B43324248D3E79B29 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.pierrehenry.GraffitiGuardTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GraffitiGuard.app/GraffitiGuard";
+			};
+			name = Debug;
+		};
+		C9007EC195D1B3FB22C60F13 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.pierrehenry.GraffitiGuardTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GraffitiGuard.app/GraffitiGuard";
+			};
+			name = Release;
+		};
+		F193B4C2973DB8A450A7BED1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2V8LZ2444Y;
+				INFOPLIST_FILE = GraffitiGuard/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.pierrehenry.GraffitiGuard;
+				PRODUCT_NAME = GraffitiGuard;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D32FE1AA989EFAA34EA6D68 /* Build configuration list for PBXProject "GraffitiGuard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				866BF9AE88872FA4FBEF4529 /* Debug */,
+				5B2699A8341002F4E3C28592 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4D0F5EEEC1B4E550E4F32ED0 /* Build configuration list for PBXNativeTarget "GraffitiGuardTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A5CF1F0B43324248D3E79B29 /* Debug */,
+				C9007EC195D1B3FB22C60F13 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5C7BB23A7EBB6A0519010198 /* Build configuration list for PBXNativeTarget "GraffitiGuard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8029304E59BFB839503C8452 /* Debug */,
+				F193B4C2973DB8A450A7BED1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8A0B74EE43129438A6C9A978 /* Project object */;
+}

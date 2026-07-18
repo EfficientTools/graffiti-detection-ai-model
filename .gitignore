@@ -63,6 +63,7 @@ data/labels/*
 *.bmp
 *.tiff
 *.webp
+!ios/GraffitiGuard/GraffitiGuard/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 
 # Models
 models/*.pt
@@ -71,6 +72,11 @@ models/*.onnx
 models/*.engine
 models/*.tflite
 !models/.gitkeep
+
+# Locally exported Apple model weights
+*.mlmodel
+*.mlpackage/
+*.mlmodelc/
 
 # Outputs
 outputs/detections/
@@ -98,6 +104,11 @@ configs/alerts.json
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Xcode
+DerivedData/
+xcuserdata/
+*.xcuserstate
 
 # Thumbnails
 ._*
