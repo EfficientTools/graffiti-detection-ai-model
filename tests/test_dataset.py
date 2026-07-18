@@ -151,6 +151,21 @@ class TestPreprocessing(unittest.TestCase):
         self.assertIsInstance(processed, np.ndarray)
         self.assertEqual(processed.shape[1], 4)
 
+    def test_postprocess_boxes_supports_scaleup_ratio(self):
+        boxes = np.array([[100, 120, 200, 220]], dtype=np.float32)
+
+        processed = postprocess_boxes(
+            boxes,
+            original_shape=(160, 160),
+            ratio=(2.0, 2.0),
+        )
+
+        np.testing.assert_allclose(processed, [[50, 60, 100, 110]])
+
+    def test_postprocess_boxes_rejects_invalid_shapes(self):
+        with self.assertRaisesRegex(ValueError, "shape"):
+            postprocess_boxes(np.array([[1, 2, 3]]), original_shape=(100, 100))
+
 
 class TestDataLoaders(unittest.TestCase):
     """Test dataloader creation"""

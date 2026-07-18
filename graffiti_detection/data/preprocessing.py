@@ -175,10 +175,16 @@ def postprocess_boxes(
         Boxes in original image coordinates
     """
     boxes = boxes.copy().astype(np.float32)
+    if boxes.size == 0:
+        return boxes.reshape(0, 4)
+    if boxes.ndim != 2 or boxes.shape[1] != 4:
+        raise ValueError("boxes must have shape (N, 4)")
+    if len(original_shape) < 2 or original_shape[0] <= 0 or original_shape[1] <= 0:
+        raise ValueError("original_shape must contain positive height and width")
 
     # Backward compatibility: older call style passed (img_shape, orig_shape)
-    # as (original_shape, ratio). Detect shape tuple and compute resize ratio.
-    if ratio is not None and ratio[0] > 1 and ratio[1] > 1:
+    # as (original_shape, ratio). Shape values are integers; current ratios are floats.
+    if ratio is not None and all(isinstance(value, (int, np.integer)) for value in ratio):
         resized_shape = original_shape
         original_shape = ratio
         ratio = (
@@ -189,6 +195,8 @@ def postprocess_boxes(
 
     if ratio is None:
         ratio = (1.0, 1.0)
+    if ratio[0] <= 0 or ratio[1] <= 0:
+        raise ValueError("ratio values must be positive")
 
     # Remove padding
     boxes[:, [0, 2]] -= padding[0]  # x padding
