@@ -13,7 +13,7 @@ Recurring unwanted graffiti creates cleanup pressure and surface damage in Melbo
 Key features:
 - Private, on-device image processing
 - No inference server, account, or internet connection required
-- Camera, photo-library, and iPad drag-and-drop support
+- Camera, Photos, Files, and iPad drag-and-drop support
 - Adjustable confidence threshold
 - Shareable inspection summaries with clear next steps
 - Universal iPhone and iPad interface

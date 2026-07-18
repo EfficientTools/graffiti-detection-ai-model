@@ -1,17 +1,21 @@
 import PhotosUI
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 struct DetectionScreen: View {
     @StateObject private var viewModel = DetectionViewModel()
     @AppStorage("confidenceThreshold") private var confidenceThreshold = 0.25
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedPhoto: PhotosPickerItem?
+    @State private var showsImageSourceChooser = false
+    @State private var showsPhotoLibrary = false
+    @State private var showsFileImporter = false
     @State private var showsCamera = false
     @State private var showsSettings = false
     @State private var didLoadStorePreview = false
     @State private var isDropTargeted = false
-    @State private var isLoadingPhoto = false
+    @State private var isLoadingImage = false
 
     private var cameraIsAvailable: Bool {
         UIImagePickerController.isSourceTypeAvailable(.camera)
@@ -58,7 +62,7 @@ struct DetectionScreen: View {
                             Label("Share report", systemImage: "square.and.arrow.up")
                         }
                         .buttonStyle(.bordered)
-                        .disabled(isLoadingPhoto)
+                        .disabled(isLoadingImage)
                     }
 
                     if viewModel.canReset {
@@ -68,7 +72,7 @@ struct DetectionScreen: View {
                             Label("New inspection", systemImage: "plus")
                         }
                         .buttonStyle(.bordered)
-                        .disabled(isLoadingPhoto)
+                        .disabled(isLoadingImage)
                         .keyboardShortcut("n", modifiers: .command)
                     }
 
@@ -85,6 +89,41 @@ struct DetectionScreen: View {
                 SettingsView()
                     .presentationDetents([.medium, .large])
             }
+            .confirmationDialog(
+                "Choose a street image",
+                isPresented: $showsImageSourceChooser,
+                titleVisibility: .visible
+            ) {
+                Button("Choose Photo") {
+                    showsPhotoLibrary = true
+                }
+                .keyboardShortcut(.defaultAction)
+
+                if cameraIsAvailable {
+                    Button("Take Photo") {
+                        showsCamera = true
+                    }
+                }
+
+                Button("Choose File") {
+                    showsFileImporter = true
+                }
+
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Select the image source for this inspection.")
+            }
+            .photosPicker(
+                isPresented: $showsPhotoLibrary,
+                selection: $selectedPhoto,
+                matching: .images
+            )
+            .fileImporter(
+                isPresented: $showsFileImporter,
+                allowedContentTypes: [.image]
+            ) { result in
+                loadImageFile(result)
+            }
             .fullScreenCover(isPresented: $showsCamera) {
                 CameraPicker { image in
                     viewModel.select(image)
@@ -94,9 +133,9 @@ struct DetectionScreen: View {
             .onChange(of: selectedPhoto) { _, item in
                 guard let item else { return }
                 Task {
-                    isLoadingPhoto = true
+                    isLoadingImage = true
                     defer {
-                        isLoadingPhoto = false
+                        isLoadingImage = false
                         selectedPhoto = nil
                     }
 
@@ -158,24 +197,31 @@ struct DetectionScreen: View {
     }
 
     private var scannerCard: some View {
-        let photoIsLoading = isLoadingPhoto
+        let imageIsLoading = isLoadingImage
 
         return VStack(spacing: 14) {
             ZStack {
-                DetectionCanvas(image: viewModel.image, report: viewModel.report)
+                DetectionCanvas(
+                    image: viewModel.image,
+                    report: viewModel.report,
+                    onChooseImage: {
+                        showsImageSourceChooser = true
+                    }
+                )
+                .disabled(isLoadingImage)
 
-                if isLoadingPhoto {
-                    PhotoLoadingOverlay()
+                if isLoadingImage {
+                    ImageLoadingOverlay()
                         .transition(.opacity.combined(with: .scale(scale: 0.98)))
                 }
             }
             .aspectRatio(4 / 3, contentMode: .fit)
-            .animation(.easeOut(duration: 0.2), value: isLoadingPhoto)
+            .animation(.easeOut(duration: 0.2), value: isLoadingImage)
 
             HStack(spacing: 12) {
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
                     HStack(spacing: 8) {
-                        if photoIsLoading {
+                        if imageIsLoading {
                             ProgressView()
                                 .controlSize(.small)
                             Text("Loading")
@@ -186,7 +232,7 @@ struct DetectionScreen: View {
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(SourceButtonStyle())
-                .disabled(isLoadingPhoto)
+                .disabled(isLoadingImage)
 
                 Button {
                     showsCamera = true
@@ -195,7 +241,7 @@ struct DetectionScreen: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(SourceButtonStyle())
-                .disabled(!cameraIsAvailable || isLoadingPhoto)
+                .disabled(!cameraIsAvailable || isLoadingImage)
                 .accessibilityHint(cameraIsAvailable ? "Capture a photo" : "Camera unavailable on this device")
             }
 
@@ -212,7 +258,7 @@ struct DetectionScreen: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
-            .disabled(isLoadingPhoto)
+            .disabled(isLoadingImage)
         }
         .padding(14)
         .guardCard()
@@ -224,11 +270,28 @@ struct DetectionScreen: View {
             }
         }
         .dropDestination(for: Data.self) { items, _ in
-            guard !isLoadingPhoto, let data = items.first else { return false }
+            guard !isLoadingImage, let data = items.first else { return false }
             viewModel.loadImageData(data)
             return true
         } isTargeted: {
             isDropTargeted = $0
+        }
+    }
+
+    private func loadImageFile(_ result: Result<URL, any Error>) {
+        guard !isLoadingImage else { return }
+
+        Task {
+            isLoadingImage = true
+            defer { isLoadingImage = false }
+
+            do {
+                let url = try result.get()
+                let data = try await ImportedImageDataLoader.load(from: url)
+                viewModel.loadImageData(data)
+            } catch {
+                viewModel.showError("The selected image file could not be loaded: \(error.localizedDescription)")
+            }
         }
     }
 
@@ -290,7 +353,7 @@ struct DetectionScreen: View {
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(PrimaryActionButtonStyle())
-                .disabled(!viewModel.canDetect || isLoadingPhoto)
+                .disabled(!viewModel.canDetect || isLoadingImage)
                 .keyboardShortcut(.return, modifiers: .command)
             }
 
@@ -376,7 +439,21 @@ struct DetectionScreen: View {
 
 }
 
-private struct PhotoLoadingOverlay: View {
+enum ImportedImageDataLoader {
+    static func load(from url: URL) async throws -> Data {
+        try await Task.detached(priority: .userInitiated) {
+            let hasSecurityAccess = url.startAccessingSecurityScopedResource()
+            defer {
+                if hasSecurityAccess {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+            return try Data(contentsOf: url, options: .mappedIfSafe)
+        }.value
+    }
+}
+
+private struct ImageLoadingOverlay: View {
     var body: some View {
         ZStack {
             Color.guardInk.opacity(0.88)
@@ -386,11 +463,11 @@ private struct PhotoLoadingOverlay: View {
                     .controlSize(.large)
                     .tint(.guardGreen)
 
-                Text("Loading photo")
+                Text("Loading image")
                     .font(.headline)
                     .foregroundStyle(.white)
 
-                Text("Downloading from iCloud if needed.")
+                Text("Retrieving from iCloud if needed.")
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.68))
             }
@@ -398,8 +475,8 @@ private struct PhotoLoadingOverlay: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Loading selected photo")
-        .accessibilityHint("Downloading from iCloud if needed")
+        .accessibilityLabel("Loading selected image")
+        .accessibilityHint("Retrieving from iCloud if needed")
     }
 }
 

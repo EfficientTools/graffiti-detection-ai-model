@@ -144,6 +144,19 @@ final class DetectionCoreTests: XCTestCase {
         XCTAssertTrue(report.shareText.contains("Next step: If graffiti is still visible"))
     }
 
+    func testImportedImageDataLoaderReadsSelectedFile() async throws {
+        let expectedData = Data([0x47, 0x47, 0x49, 0x4D, 0x47])
+        let fileURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("jpg")
+        try expectedData.write(to: fileURL)
+        defer { try? FileManager.default.removeItem(at: fileURL) }
+
+        let importedData = try await ImportedImageDataLoader.load(from: fileURL)
+
+        XCTAssertEqual(importedData, expectedData)
+    }
+
     @MainActor
     func testViewModelResetClearsInspection() {
         let viewModel = DetectionViewModel(

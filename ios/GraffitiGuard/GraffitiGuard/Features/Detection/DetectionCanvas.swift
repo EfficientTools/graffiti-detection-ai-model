@@ -4,6 +4,7 @@ import UIKit
 struct DetectionCanvas: View {
     let image: UIImage?
     let report: DetectionReport?
+    let onChooseImage: () -> Void
 
     var body: some View {
         GeometryReader { geometry in
@@ -28,8 +29,13 @@ struct DetectionCanvas: View {
                         }
                     }
                 } else {
-                    emptyState
-                        .frame(width: geometry.size.width, height: geometry.size.height)
+                    Button(action: onChooseImage) {
+                        emptyState
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Choose a street image")
+                    .accessibilityHint("Choose a photo or file, or take a photo")
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -47,11 +53,10 @@ struct DetectionCanvas: View {
                 .font(.headline)
                 .foregroundStyle(.white)
 
-            Text("Use the camera or photo library")
+            Text("Choose from Photos or Files, or take a photo")
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.60))
         }
-        .accessibilityElement(children: .combine)
     }
 }
 
