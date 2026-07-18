@@ -1,0 +1,1 @@
+Detect likely graffiti privately on your iPhone or iPad. Images stay on-device with offline Core ML processing.

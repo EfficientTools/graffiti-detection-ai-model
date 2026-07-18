@@ -1,0 +1,12 @@
+Detect likely graffiti in photos and camera captures without uploading images.
+
+Graffiti Guard runs a bundled Core ML detector entirely on your iPhone or iPad. Choose a photo, take a picture, or try the built-in sample scene. The app highlights likely graffiti and reports confidence for human review.
+
+Key features:
+- Private, on-device image processing
+- No inference server, account, or internet connection required
+- Camera and photo-library support
+- Adjustable confidence threshold
+- Universal iPhone and iPad interface
+
+Graffiti Guard supports maintenance decisions and should not replace human review.

@@ -65,6 +65,7 @@ data/labels/*
 *.webp
 !ios/GraffitiGuard/GraffitiGuard/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 !ios/GraffitiGuard/GraffitiGuard/Resources/Assets.xcassets/DemoStreet.imageset/DemoStreet.png
+!ios/GraffitiGuard/AppStore/Screenshots/**/*.png
 
 # Models
 models/*.pt

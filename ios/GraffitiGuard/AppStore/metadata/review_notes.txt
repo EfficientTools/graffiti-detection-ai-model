@@ -1,0 +1,7 @@
+No sign-in or demo account is required.
+
+To test without granting Photos or Camera access:
+1. Tap "Try sample scene."
+2. Tap "Detect graffiti."
+
+The app runs its bundled Core ML model entirely on-device. It does not transmit images, collect user data, use analytics, or contact an inference server. Camera and photo-library access are only used when the reviewer selects those controls.
