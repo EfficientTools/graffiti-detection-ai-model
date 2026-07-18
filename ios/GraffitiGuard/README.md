@@ -6,7 +6,7 @@ Graffiti Guard is a universal SwiftUI app that checks a camera capture or select
 
 Requirements: macOS, Xcode 26, XcodeGen, and iOS or iPadOS 17 or newer.
 
-Trained weights are intentionally not stored in Git. Export your one-class Ultralytics model, regenerate the project, then run the `GraffitiGuard` scheme:
+The App Store target includes an MIT-licensed one-class Core ML detector. To replace it with your own Ultralytics model, export the weights, regenerate the project, then run the `GraffitiGuard` scheme:
 
 ```bash
 python -m pip install -e ".[apple]"
@@ -15,7 +15,7 @@ xcodegen generate --spec ios/GraffitiGuard/project.yml
 open ios/GraffitiGuard/GraffitiGuard.xcodeproj
 ```
 
-The model must contain exactly one class named `graffiti`. The export creates `GraffitiDetector.mlpackage` with 640-pixel letterbox input and Core ML non-maximum suppression. Without it, the app builds safely and explains that the model is missing instead of returning false detections.
+Replacement models must contain exactly one class named `graffiti`. The export creates `GraffitiDetector.mlpackage` with 640-pixel letterbox input and Core ML non-maximum suppression. See the repository's third-party notices for the bundled detector's source and license.
 
 ## Test
 

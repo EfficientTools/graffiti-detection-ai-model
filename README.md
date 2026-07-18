@@ -26,7 +26,7 @@ I built this project because I hate seeing my city being destroyed and ruined by
 - Private, offline Core ML inference on iPhone and iPad
 - Street-scene augmentation for poor lighting, weather, perspective, and CCTV artifacts
 
-Model weights are not bundled. Train a model with this project or provide compatible Ultralytics YOLO weights.
+Training weights are not bundled. The Apple client includes an MIT-licensed Core ML detector for offline use; see [Third-Party Notices](https://github.com/EfficientTools/graffiti-detection-ai-model/blob/main/THIRD_PARTY_NOTICES.md).
 
 ## Installation
 
@@ -96,7 +96,7 @@ See [DEPLOYMENT.md](https://github.com/EfficientTools/graffiti-detection-ai-mode
 
 ## iPhone and iPad
 
-The universal SwiftUI app in [`ios/GraffitiGuard`](https://github.com/EfficientTools/graffiti-detection-ai-model/tree/main/ios/GraffitiGuard) runs a bundled Core ML detector entirely on-device and overlays detected regions. Export your trained weights, then regenerate the Xcode project:
+The universal SwiftUI app in [`ios/GraffitiGuard`](https://github.com/EfficientTools/graffiti-detection-ai-model/tree/main/ios/GraffitiGuard) runs its bundled Core ML detector entirely on-device and overlays detected regions. To replace it with your own trained weights, export the model and regenerate the Xcode project:
 
 ```bash
 python -m pip install -e ".[apple]"
