@@ -1,7 +1,15 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,13 +31,23 @@ const iconPath = resolve(
 const slides = [
   {
     slug: "spot-fast",
-    title: ["Spot graffiti.", "Fast."],
-    body: "On-device AI highlights likely graffiti in a single tap.",
+    title: ["Detect likely", "graffiti. Fast."],
+    body: "On-device AI highlights regions for immediate human review.",
     badge: "SMART DETECTION",
     source: "detection",
     accent: "#B8FF46",
     background: ["#091713", "#183C2E"],
     tilt: -1.4,
+  },
+  {
+    slug: "field-teams",
+    title: ["Built for", "field teams."],
+    body: "Drop in a photo, tune confidence, and review in seconds.",
+    badge: "IPAD READY",
+    source: "detection",
+    accent: "#36E6C2",
+    background: ["#07171A", "#124248"],
+    tilt: 1.2,
   },
   {
     slug: "stay-private",
@@ -39,7 +57,7 @@ const slides = [
     source: "privacy",
     accent: "#36E6C2",
     background: ["#07171A", "#124248"],
-    tilt: 1.2,
+    tilt: -0.8,
   },
   {
     slug: "no-server",
@@ -49,33 +67,23 @@ const slides = [
     source: "ready",
     accent: "#FFB449",
     background: ["#1A120A", "#4A3116"],
-    tilt: -0.8,
-  },
-  {
-    slug: "control-confidence",
-    title: ["Confidence", "you control."],
-    body: "Tune the detection threshold for every inspection.",
-    badge: "ADJUSTABLE",
-    source: "privacy",
-    accent: "#FF765F",
-    background: ["#1C0E10", "#4A1D21"],
     tilt: 1.1,
   },
   {
-    slug: "photo-to-answer",
-    title: ["From photo", "to answer."],
-    body: "Choose an image, detect, and review the highlighted area.",
-    badge: "THREE SIMPLE STEPS",
-    source: "ready",
+    slug: "share-report",
+    title: ["Share a clear", "inspection report."],
+    body: "Reference, confidence, latency, and review guidance included.",
+    badge: "READY TO COORDINATE",
+    source: "detection",
     accent: "#84A9FF",
     background: ["#0B1122", "#213B6B"],
     tilt: -1.2,
   },
   {
-    slug: "real-streets",
-    title: ["Built for", "real streets."],
-    body: "Clear results support faster maintenance decisions.",
-    badge: "FIELD READY",
+    slug: "cleaner-cities",
+    title: ["Cleaner cities", "start earlier."],
+    body: "Inspired by Melbourne. Built for communities worldwide.",
+    badge: "PURPOSE BUILT",
     source: "detection",
     accent: "#B8FF46",
     background: ["#0B1411", "#294536"],
@@ -211,6 +219,11 @@ function render(svg, outputPath, width, height) {
 }
 
 mkdirSync(outputDir, { recursive: true });
+for (const file of readdirSync(outputDir)) {
+  if (/^(iphone-6\.9|ipad-13)-.*\.png$/.test(file)) {
+    unlinkSync(join(outputDir, file));
+  }
+}
 const iconData = dataUrl(iconPath);
 
 try {
