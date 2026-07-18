@@ -29,6 +29,12 @@ Prefer a ready-to-use mobile experience? Graffiti Guard runs private, offline de
 
 I built this project because I hate seeing Melbourne and other cities damaged by unwanted graffiti. Earlier image review can help councils and maintenance teams prioritize work before cleanup costs and repeated surface damage escalate.
 
+## Operational Value
+
+The problem is measurable: the City of Melbourne allocated [$2.8 million to graffiti cleaning in 2025-26](https://participate.melbourne.vic.gov.au/budget-2025-26) and reports handling [more than 5,000 removal requests and 50,000 square metres each year](https://participate.melbourne.vic.gov.au/graffiti-management-policy/graffiti-management-overview). Graffiti Guard targets the intake and triage step with private image review, consistent evidence, and faster handoff; it does not claim to eliminate removal costs.
+
+Measure a pilot honestly: `annual net value = ((manual review minutes - assisted review minutes) * annual reports * loaded hourly cost / 60) - annual deployment cost`. Use local workflow data before publishing any savings claim.
+
 ## What Makes It Useful
 
 - A small Python API for image inference
@@ -40,6 +46,10 @@ I built this project because I hate seeing Melbourne and other cities damaged by
 - Street-scene augmentation for poor lighting, weather, perspective, and CCTV artifacts
 
 Training weights are not bundled. The Apple client includes an MIT-licensed Core ML detector for offline use; see [Third-Party Notices](https://github.com/EfficientTools/graffiti-detection-ai-model/blob/main/THIRD_PARTY_NOTICES.md).
+
+## Model Quality
+
+Model quality is evidence, not a slogan. Evaluation produces a versioned report with model and dataset hashes, accuracy, runtime versions, latency, and optional release gates. Apple CI also runs the actual bundled Core ML model against the included sample. See the [Model Card](https://github.com/EfficientTools/graffiti-detection-ai-model/blob/main/MODEL_CARD.md) for scope and limitations.
 
 ## Installation
 
@@ -92,6 +102,17 @@ for detection in detections:
 
 Replace `example_image` with a local image path for your own detection. Each result contains `class_id`, `class_name`, `confidence`, and an `xyxy` box.
 
+Measure steady-state performance on your own hardware:
+
+```python
+benchmark = detector.benchmark(
+    ["street-a.jpg", "street-b.jpg"],
+    warmup_runs=1,
+    measured_runs=5,
+)
+print(benchmark.to_dict())
+```
+
 ## Command Line
 
 ```bash
@@ -100,7 +121,12 @@ python scripts/prepare_dataset.py --data-dir data/raw --output-dir data --valida
 
 # Train and evaluate
 python scripts/train.py --data configs/dataset.yaml --model yolov8n --epochs 100
-python scripts/evaluate.py --model models/best.pt --data configs/dataset.yaml --split test
+python scripts/evaluate.py \
+  --model models/best.pt \
+  --data configs/dataset.yaml \
+  --split test \
+  --min-map50 0.80 \
+  --min-recall 0.75
 
 # Run image, directory, video, or webcam inference
 python scripts/inference.py --model models/best.pt --source image.jpg
