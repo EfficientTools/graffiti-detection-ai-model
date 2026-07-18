@@ -2,8 +2,10 @@ No sign-in or demo account is required.
 
 To test without granting Photos or Camera access:
 1. Tap "Try sample scene."
-2. Tap "Detect graffiti."
+2. Wait briefly for automatic on-device analysis.
 3. Use "Share report" to inspect the generated text summary.
+
+Automatic analysis can be disabled in Settings if manual detection is preferred.
 
 On iPad, reviewers can also drag an image into the scanner panel. Command-Return runs detection, Command-N starts a new inspection, and Command-Comma opens settings.
 
