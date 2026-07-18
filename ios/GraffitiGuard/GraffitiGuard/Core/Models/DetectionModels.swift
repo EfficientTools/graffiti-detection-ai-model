@@ -45,6 +45,15 @@ struct DetectionReport: Equatable, Sendable {
         result.items
     }
 
+    var nextStep: String {
+        if result.count > 0 {
+            return "Verify each highlighted region, then share this reference with the "
+                + "responsible maintenance team."
+        }
+        return "If graffiti is still visible, review the image manually or lower the confidence "
+            + "threshold and run detection again."
+    }
+
     var shareText: String {
         let outcome = result.count > 0 ? "Likely graffiti detected" : "No likely graffiti detected"
         let highestConfidence =
@@ -64,6 +73,7 @@ struct DetectionReport: Equatable, Sendable {
             Highest confidence: \(highestConfidence)
             Minimum confidence: \(threshold.formatted(.percent.precision(.fractionLength(0))))
             Model processing: \(processingTime) ms
+            Next step: \(nextStep)
 
             Processed privately on this device. Human verification is required before any response or enforcement decision.
             """

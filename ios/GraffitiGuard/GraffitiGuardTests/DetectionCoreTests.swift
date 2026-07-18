@@ -127,7 +127,21 @@ final class DetectionCoreTests: XCTestCase {
         XCTAssertTrue(report.shareText.contains("Result: Likely graffiti detected"))
         XCTAssertTrue(report.shareText.contains("Highest confidence: 87%"))
         XCTAssertTrue(report.shareText.contains("Minimum confidence: 25%"))
+        XCTAssertTrue(report.shareText.contains("Next step: Verify each highlighted region"))
         XCTAssertTrue(report.shareText.contains("Human verification is required"))
+    }
+
+    func testReportRecommendsManualReviewForEmptyResult() {
+        let report = DetectionReport(
+            result: DetectionResult(items: [], processingTimeMs: 12),
+            imageSize: CGSize(width: 640, height: 480),
+            threshold: 0.25,
+            reference: "GG-EMPTY"
+        )
+
+        XCTAssertTrue(report.nextStep.contains("review the image manually"))
+        XCTAssertTrue(report.shareText.contains("Result: No likely graffiti detected"))
+        XCTAssertTrue(report.shareText.contains("Next step: If graffiti is still visible"))
     }
 
     @MainActor

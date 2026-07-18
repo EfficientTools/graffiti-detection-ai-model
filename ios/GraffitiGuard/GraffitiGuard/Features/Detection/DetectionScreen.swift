@@ -464,6 +464,19 @@ private struct ResultSummary: View {
                 )
             }
 
+            VStack(alignment: .leading, spacing: 7) {
+                Label("Recommended next step", systemImage: "arrow.turn.down.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(foundGraffiti ? Color.guardAmber : Color.guardGreen)
+
+                Text(report.nextStep)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(12)
+            .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 13))
+
             HStack {
                 Label(report.reference, systemImage: "number")
                 Spacer()
