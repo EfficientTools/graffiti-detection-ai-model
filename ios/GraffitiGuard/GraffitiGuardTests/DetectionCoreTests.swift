@@ -1,5 +1,6 @@
 import CoreML
 import Foundation
+import UIKit
 import XCTest
 
 @testable import GraffitiGuard
@@ -145,6 +146,58 @@ final class DetectionCoreTests: XCTestCase {
         XCTAssertNil(viewModel.report)
         XCTAssertEqual(viewModel.phase, .empty)
         XCTAssertFalse(viewModel.canReset)
+    }
+
+    @MainActor
+    func testBundledModelDetectsSampleScene() async throws {
+        XCTAssertTrue(OnDeviceGraffitiDetector.isModelBundled)
+
+        let image = try XCTUnwrap(UIImage(named: "DemoStreet"))
+        let prepared = try XCTUnwrap(ImagePreparer.prepare(image))
+        let detector = OnDeviceGraffitiDetector()
+
+        let clock = ContinuousClock()
+        let preparationStartedAt = clock.now
+        try await detector.prepare()
+        let preparationDuration = preparationStartedAt.duration(to: clock.now)
+        let preparationMs =
+            Double(preparationDuration.components.seconds) * 1_000
+            + Double(preparationDuration.components.attoseconds) / 1e15
+
+        let result = try await detector.detect(
+            image: prepared.cgImage,
+            threshold: 0.25
+        )
+        let warmedResult = try await detector.detect(
+            image: prepared.cgImage,
+            threshold: 0.25
+        )
+
+        XCTAssertFalse(result.items.isEmpty)
+        XCTAssertFalse(warmedResult.items.isEmpty)
+        XCTAssertGreaterThan(preparationMs, 0)
+        XCTAssertLessThan(preparationMs, 10_000)
+        XCTAssertTrue(result.processingTimeMs.isFinite)
+        XCTAssertGreaterThan(result.processingTimeMs, 0)
+        XCTAssertLessThan(result.processingTimeMs, 10_000)
+        XCTAssertLessThan(warmedResult.processingTimeMs, 5_000)
+
+        let imageBounds = CGRect(origin: .zero, size: prepared.image.size)
+        for detection in result.items {
+            XCTAssertTrue(detection.confidence.isFinite)
+            XCTAssertGreaterThanOrEqual(detection.confidence, 0.25)
+            XCTAssertLessThanOrEqual(detection.confidence, 1)
+            XCTAssertGreaterThan(detection.box.width, 0)
+            XCTAssertGreaterThan(detection.box.height, 0)
+            XCTAssertTrue(imageBounds.contains(detection.box))
+        }
+
+        print(
+            "Bundled Core ML sample: \(result.count) region(s), "
+                + "\(preparationMs.formatted(.number.precision(.fractionLength(1)))) ms preparation, "
+                + "\(result.processingTimeMs.formatted(.number.precision(.fractionLength(1)))) ms first, "
+                + "\(warmedResult.processingTimeMs.formatted(.number.precision(.fractionLength(1)))) ms repeat"
+        )
     }
 }
 

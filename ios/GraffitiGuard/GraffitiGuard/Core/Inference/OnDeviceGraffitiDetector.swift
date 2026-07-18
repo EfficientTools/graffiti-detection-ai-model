@@ -5,7 +5,12 @@ import CoreVideo
 import Foundation
 
 protocol GraffitiDetecting: Sendable {
+    func prepare() async throws
     func detect(image: CGImage, threshold: Double) async throws -> DetectionResult
+}
+
+extension GraffitiDetecting {
+    func prepare() async throws {}
 }
 
 actor OnDeviceGraffitiDetector: GraffitiDetecting {
@@ -23,6 +28,10 @@ actor OnDeviceGraffitiDetector: GraffitiDetecting {
 
     static var isModelBundled: Bool {
         modelURL(in: .main) != nil
+    }
+
+    func prepare() async throws {
+        _ = try await loadModel()
     }
 
     func detect(image: CGImage, threshold: Double) async throws -> DetectionResult {

@@ -40,6 +40,18 @@ final class DetectionViewModel: ObservableObject {
         image != nil || report != nil || errorMessage != nil
     }
 
+    func prepareModel() async {
+        guard modelIsAvailable else { return }
+
+        do {
+            try await detector.prepare()
+        } catch is CancellationError {
+            return
+        } catch {
+            showError(error.localizedDescription)
+        }
+    }
+
     func loadImageData(_ data: Data) {
         guard let image = UIImage(data: data) else {
             showError(DetectionError.invalidImage.localizedDescription)

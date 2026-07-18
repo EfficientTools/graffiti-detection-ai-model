@@ -112,6 +112,7 @@ struct DetectionScreen: View {
                 }
             }
             .task {
+                await viewModel.prepareModel()
                 guard !didLoadStorePreview else { return }
 
                 let arguments = ProcessInfo.processInfo.arguments
