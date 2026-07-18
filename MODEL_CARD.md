@@ -21,7 +21,7 @@ Every Python evaluation can produce `evaluation-report.json` containing:
 - Python, platform, PyTorch, and Ultralytics versions
 - pass/fail results for deployment-specific quality gates
 
-Apple CI loads the model shipped inside the app, runs the bundled sample at the default 25% threshold, checks for the expected detection, validates confidence and box bounds, then applies conservative model-preparation, first-inference, and repeat-inference regression limits.
+Apple CI loads the model shipped inside the app, detects the bundled sample and a compressed variant, rejects a synthetic blank wall, verifies threshold monotonicity, validates confidence and box bounds, then applies conservative model-preparation, first-inference, and repeat-inference limits.
 
 No universal accuracy claim is published because this repository does not include a representative, held-out deployment dataset. Compare models only on the same versioned dataset and hardware.
 

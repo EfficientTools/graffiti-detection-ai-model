@@ -21,7 +21,7 @@ YOLOv8-based graffiti detection for Python applications, model training, batch i
 
 ## App for iPhone and iPad
 
-Prefer a ready-to-use mobile experience? Graffiti Guard runs private, offline detection directly on iPhone and iPad, with an inspection-focused iPad interface and shareable results.
+Prefer a ready-to-use mobile experience? Graffiti Guard runs private, offline detection directly on iPhone and iPad. New images are analysed automatically by default, with an inspection-focused iPad interface and shareable results.
 
 <p align="center">
   <a href="https://apps.apple.com/app/id6792218806">
@@ -48,7 +48,7 @@ Measure a pilot honestly: `annual net value = ((manual review minutes - assisted
 - Multi-camera monitoring with email, SMS, webhook, Discord, Slack, and OneSignal alerts
 - FastAPI and Docker deployment options
 - Private, offline Core ML inference on iPhone and iPad
-- Shareable, human-reviewable inspection summaries on iPad
+- Automatic analysis with shareable, human-reviewable inspection summaries
 - Street-scene augmentation for poor lighting, weather, perspective, and CCTV artifacts
 
 Training weights are not bundled. The Apple client includes an MIT-licensed Core ML detector for offline use; see [Third-Party Notices](https://github.com/EfficientTools/graffiti-detection-ai-model/blob/main/THIRD_PARTY_NOTICES.md).
@@ -121,6 +121,8 @@ print(benchmark.to_dict())
 
 ## Command Line
 
+Run these operational scripts from a source checkout:
+
 ```bash
 # Prepare a YOLO-format dataset
 python scripts/prepare_dataset.py --data-dir data/raw --output-dir data --validate --copy
@@ -150,7 +152,8 @@ python scripts/multi_camera_surveillance.py \
 Start the API with:
 
 ```bash
-MODEL_PATH=models/best.pt uvicorn api.graffiti_detector:app --host 0.0.0.0 --port 8000
+python -m pip install "graffiti-detection-ai-model[api]"
+MODEL_PATH=models/best.pt uvicorn graffiti_detection.api:app --host 0.0.0.0 --port 8000
 ```
 
 See [DEPLOYMENT.md](https://github.com/EfficientTools/graffiti-detection-ai-model/blob/main/DEPLOYMENT.md) for Docker instructions.

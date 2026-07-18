@@ -5,12 +5,12 @@ The repository ships a Docker image for the FastAPI service and an optional Comp
 ## API Container
 
 ```bash
-docker build -t graffiti-detection-ai:1.4.0 .
+docker build -t graffiti-detection-ai:1.5.0 .
 docker run --rm \
   -p 8000:8000 \
   -v "$(pwd)/models:/app/models:ro" \
   -v graffiti-detection-output:/app/outputs \
-  graffiti-detection-ai:1.4.0
+  graffiti-detection-ai:1.5.0
 ```
 
 The default image is portable and CPU-compatible. GPU deployments should use a PyTorch base image that matches the host CUDA runtime. Check service health at `http://localhost:8000/`.
@@ -38,13 +38,16 @@ The real configuration files are ignored by Git because they can contain camera 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `MODEL_PATH` | `models/best.pt` | Model loaded by the API |
+| `MAX_UPLOAD_BYTES` | `20971520` | Maximum bytes accepted for one image |
+| `MAX_IMAGE_PIXELS` | `40000000` | Maximum decoded image dimensions |
+| `MAX_BATCH_SIZE` | `16` | Maximum images accepted per batch |
 | `LOG_LEVEL` | `INFO` | Application log level |
 | `TZ` | `UTC` | Surveillance container timezone |
 
 ## Production Checklist
 
 - Terminate TLS at a reverse proxy or load balancer.
-- Add authentication and request limits before exposing the API publicly.
+- Add authentication and infrastructure-level request limits before exposing the API publicly.
 - Store camera and alert credentials in a secret manager or mounted read-only files.
 - Restrict access to camera networks, models, saved detections, and logs.
 - Set retention rules that comply with local privacy requirements.
