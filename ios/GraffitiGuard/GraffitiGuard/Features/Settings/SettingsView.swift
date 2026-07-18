@@ -2,14 +2,19 @@ import SwiftUI
 
 struct SettingsView: View {
     @AppStorage("confidenceThreshold") private var confidenceThreshold = 0.25
+    @AppStorage("automaticallyDetect") private var automaticallyDetect = true
     @Environment(\.dismiss) private var dismiss
     @State private var draftConfidenceThreshold: Double
+    @State private var draftAutomaticallyDetect: Bool
 
     init() {
         let defaults = UserDefaults.standard
         let storedConfidence = defaults.object(forKey: "confidenceThreshold") as? Double ?? 0.25
         _draftConfidenceThreshold = State(
             initialValue: min(max(storedConfidence, 0.1), 0.9)
+        )
+        _draftAutomaticallyDetect = State(
+            initialValue: defaults.object(forKey: "automaticallyDetect") as? Bool ?? true
         )
     }
 
@@ -48,6 +53,13 @@ struct SettingsView: View {
                         "Minimum confidence",
                         value: draftConfidenceThreshold.formatted(.percent.precision(.fractionLength(0)))
                     )
+                }
+
+                Section("Workflow") {
+                    Toggle("Analyse new images automatically", isOn: $draftAutomaticallyDetect)
+                    Text("Runs the offline detector as soon as a photo or file is ready.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
 
                 Section("Privacy") {
@@ -93,6 +105,7 @@ struct SettingsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         confidenceThreshold = draftConfidenceThreshold
+                        automaticallyDetect = draftAutomaticallyDetect
                         dismiss()
                     }
                 }

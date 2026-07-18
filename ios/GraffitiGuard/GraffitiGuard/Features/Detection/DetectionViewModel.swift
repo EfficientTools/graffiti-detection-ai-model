@@ -52,28 +52,37 @@ final class DetectionViewModel: ObservableObject {
         }
     }
 
-    func loadImageData(_ data: Data) {
-        guard let image = UIImage(data: data) else {
+    @discardableResult
+    func loadImageData(_ data: Data) async -> Bool {
+        guard let prepared = await ImagePreparer.prepare(data: data) else {
             showError(DetectionError.invalidImage.localizedDescription)
-            return
+            return false
         }
-        select(image)
+        apply(prepared)
+        return true
     }
 
-    func loadSample() {
+    @discardableResult
+    func loadSample() -> Bool {
         guard let image = UIImage(named: "DemoStreet") else {
             showError("The sample scene could not be loaded.")
-            return
+            return false
         }
-        select(image)
+        return select(image)
     }
 
-    func select(_ image: UIImage) {
+    @discardableResult
+    func select(_ image: UIImage) -> Bool {
         guard let prepared = ImagePreparer.prepare(image) else {
             showError(DetectionError.invalidImage.localizedDescription)
-            return
+            return false
         }
 
+        apply(prepared)
+        return true
+    }
+
+    private func apply(_ prepared: PreparedImage) {
         selectionID = UUID()
         self.image = prepared.image
         cgImage = prepared.cgImage

@@ -176,6 +176,23 @@ final class DetectionCoreTests: XCTestCase {
     }
 
     @MainActor
+    func testDownsamplesEncodedImageBeforeDisplay() async throws {
+        let source = UIGraphicsImageRenderer(size: CGSize(width: 3_000, height: 1_500)).image {
+            context in
+            UIColor.systemGreen.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 3_000, height: 1_500))
+        }
+        let data = try XCTUnwrap(source.jpegData(compressionQuality: 0.9))
+
+        let decoded = await ImagePreparer.prepare(data: data)
+        let prepared = try XCTUnwrap(decoded)
+
+        XCTAssertEqual(prepared.image.size, CGSize(width: 2_048, height: 1_024))
+        XCTAssertEqual(prepared.cgImage.width, 2_048)
+        XCTAssertEqual(prepared.cgImage.height, 1_024)
+    }
+
+    @MainActor
     func testBundledModelDetectsSampleScene() async throws {
         XCTAssertTrue(OnDeviceGraffitiDetector.isModelBundled)
 
@@ -199,15 +216,28 @@ final class DetectionCoreTests: XCTestCase {
             image: prepared.cgImage,
             threshold: 0.25
         )
+        let stricterResult = try await detector.detect(
+            image: prepared.cgImage,
+            threshold: 0.60
+        )
+        let compressedData = try XCTUnwrap(image.jpegData(compressionQuality: 0.35))
+        let decodedCompressedImage = await ImagePreparer.prepare(data: compressedData)
+        let compressedImage = try XCTUnwrap(decodedCompressedImage)
+        let compressedResult = try await detector.detect(
+            image: compressedImage.cgImage,
+            threshold: 0.25
+        )
 
         XCTAssertFalse(result.items.isEmpty)
         XCTAssertFalse(warmedResult.items.isEmpty)
+        XCTAssertFalse(compressedResult.items.isEmpty)
         XCTAssertGreaterThan(preparationMs, 0)
         XCTAssertLessThan(preparationMs, 10_000)
         XCTAssertTrue(result.processingTimeMs.isFinite)
         XCTAssertGreaterThan(result.processingTimeMs, 0)
         XCTAssertLessThan(result.processingTimeMs, 10_000)
         XCTAssertLessThan(warmedResult.processingTimeMs, 5_000)
+        XCTAssertLessThanOrEqual(stricterResult.count, warmedResult.count)
 
         let imageBounds = CGRect(origin: .zero, size: prepared.image.size)
         for detection in result.items {
@@ -225,6 +255,22 @@ final class DetectionCoreTests: XCTestCase {
                 + "\(result.processingTimeMs.formatted(.number.precision(.fractionLength(1)))) ms first, "
                 + "\(warmedResult.processingTimeMs.formatted(.number.precision(.fractionLength(1)))) ms repeat"
         )
+    }
+
+    @MainActor
+    func testBundledModelRejectsBlankWall() async throws {
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 1_280, height: 720)).image {
+            context in
+            UIColor(white: 0.82, alpha: 1).setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 1_280, height: 720))
+        }
+        let prepared = try XCTUnwrap(ImagePreparer.prepare(image))
+        let result = try await OnDeviceGraffitiDetector().detect(
+            image: prepared.cgImage,
+            threshold: 0.25
+        )
+
+        XCTAssertTrue(result.items.isEmpty)
     }
 }
 

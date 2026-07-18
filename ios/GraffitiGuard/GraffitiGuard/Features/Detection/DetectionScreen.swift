@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 struct DetectionScreen: View {
     @StateObject private var viewModel = DetectionViewModel()
     @AppStorage("confidenceThreshold") private var confidenceThreshold = 0.25
+    @AppStorage("automaticallyDetect") private var automaticallyDetect = true
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var showsImageSourceChooser = false
@@ -126,7 +127,11 @@ struct DetectionScreen: View {
             }
             .fullScreenCover(isPresented: $showsCamera) {
                 CameraPicker { image in
-                    viewModel.select(image)
+                    Task {
+                        await prepareImage {
+                            viewModel.select(image)
+                        }
+                    }
                 }
                 .ignoresSafeArea()
             }
@@ -144,7 +149,11 @@ struct DetectionScreen: View {
                             viewModel.showError("The selected photo could not be loaded.")
                             return
                         }
-                        viewModel.loadImageData(data)
+                        let selected = await viewModel.loadImageData(data)
+                        isLoadingImage = false
+                        if selected {
+                            await detectAutomaticallyIfNeeded()
+                        }
                     } catch {
                         viewModel.showError("The selected photo could not be loaded: \(error.localizedDescription)")
                     }
@@ -252,7 +261,11 @@ struct DetectionScreen: View {
             }
 
             Button {
-                viewModel.loadSample()
+                Task {
+                    await prepareImage {
+                        viewModel.loadSample()
+                    }
+                }
             } label: {
                 Label("Try sample scene", systemImage: "building.2.crop.circle")
                     .frame(maxWidth: .infinity)
@@ -271,7 +284,11 @@ struct DetectionScreen: View {
         }
         .dropDestination(for: Data.self) { items, _ in
             guard !isLoadingImage, let data = items.first else { return false }
-            viewModel.loadImageData(data)
+            Task {
+                await prepareImage {
+                    await viewModel.loadImageData(data)
+                }
+            }
             return true
         } isTargeted: {
             isDropTargeted = $0
@@ -288,11 +305,33 @@ struct DetectionScreen: View {
             do {
                 let url = try result.get()
                 let data = try await ImportedImageDataLoader.load(from: url)
-                viewModel.loadImageData(data)
+                let selected = await viewModel.loadImageData(data)
+                isLoadingImage = false
+                if selected {
+                    await detectAutomaticallyIfNeeded()
+                }
             } catch {
                 viewModel.showError("The selected image file could not be loaded: \(error.localizedDescription)")
             }
         }
+    }
+
+    @MainActor
+    private func prepareImage(_ selection: @MainActor () async -> Bool) async {
+        guard !isLoadingImage else { return }
+        isLoadingImage = true
+        await Task.yield()
+        let selected = await selection()
+        isLoadingImage = false
+        if selected {
+            await detectAutomaticallyIfNeeded()
+        }
+    }
+
+    @MainActor
+    private func detectAutomaticallyIfNeeded() async {
+        guard automaticallyDetect, viewModel.canDetect else { return }
+        await viewModel.detect(threshold: confidenceThreshold)
     }
 
     private var controlCard: some View {
@@ -414,7 +453,9 @@ struct DetectionScreen: View {
                 icon: "checkmark.circle.fill",
                 color: .guardGreen,
                 title: "Image ready",
-                message: "Tap Detect to run the model."
+                message: automaticallyDetect
+                    ? "Starting private on-device analysis."
+                    : "Tap Detect to run the model."
             )
         case .detecting:
             StatusHeader(

@@ -19,6 +19,8 @@ actor OnDeviceGraffitiDetector: GraffitiDetecting {
     private let modelURL: URL?
     private let imageContext = CIContext(options: [.cacheIntermediates: false])
     private var model: MLModel?
+    private var inputBuffer: CVPixelBuffer?
+    private var inputBufferSize: CGSize = .zero
     private var predictionInFlight = false
     private var predictionWaiters: [CheckedContinuation<Void, Never>] = []
 
@@ -118,7 +120,11 @@ actor OnDeviceGraffitiDetector: GraffitiDetecting {
         }
 
         let configuration = MLModelConfiguration()
-        configuration.computeUnits = .cpuAndNeuralEngine
+        #if targetEnvironment(simulator)
+            configuration.computeUnits = .cpuAndNeuralEngine
+        #else
+            configuration.computeUnits = .all
+        #endif
 
         do {
             let loadedModel = try await MLModel.load(contentsOf: modelURL, configuration: configuration)
@@ -144,22 +150,28 @@ actor OnDeviceGraffitiDetector: GraffitiDetecting {
             sourceSize: CGSize(width: image.width, height: image.height),
             targetSize: CGSize(width: constraint.pixelsWide, height: constraint.pixelsHigh)
         )
-        let pixelBuffer = try makePixelBuffer(
-            image: image,
+        let pixelBuffer = try reusablePixelBuffer(
             width: constraint.pixelsWide,
-            height: constraint.pixelsHigh,
+            height: constraint.pixelsHigh
+        )
+        render(
+            image: image,
+            to: pixelBuffer,
             transform: transform
         )
 
         return CoreMLModelInput(pixelBuffer: pixelBuffer, transform: transform)
     }
 
-    private func makePixelBuffer(
-        image: CGImage,
+    private func reusablePixelBuffer(
         width: Int,
-        height: Int,
-        transform: LetterboxTransform
+        height: Int
     ) throws -> CVPixelBuffer {
+        let requestedSize = CGSize(width: width, height: height)
+        if inputBufferSize == requestedSize, let inputBuffer {
+            return inputBuffer
+        }
+
         let attributes: [CFString: Any] = [
             kCVPixelBufferCGImageCompatibilityKey: true,
             kCVPixelBufferCGBitmapContextCompatibilityKey: true,
@@ -178,6 +190,18 @@ actor OnDeviceGraffitiDetector: GraffitiDetecting {
             throw DetectionError.inferenceFailed
         }
 
+        inputBuffer = buffer
+        inputBufferSize = requestedSize
+        return buffer
+    }
+
+    private func render(
+        image: CGImage,
+        to buffer: CVPixelBuffer,
+        transform: LetterboxTransform
+    ) {
+        let width = CVPixelBufferGetWidth(buffer)
+        let height = CVPixelBufferGetHeight(buffer)
         let targetRect = CGRect(x: 0, y: 0, width: width, height: height)
         let background = CIImage(color: CIColor(red: 114 / 255, green: 114 / 255, blue: 114 / 255))
             .cropped(to: targetRect)
@@ -195,7 +219,6 @@ actor OnDeviceGraffitiDetector: GraffitiDetecting {
             bounds: targetRect,
             colorSpace: CGColorSpaceCreateDeviceRGB()
         )
-        return buffer
     }
 }
 

@@ -1,3 +1,4 @@
+import ImageIO
 import UIKit
 
 struct PreparedImage {
@@ -7,6 +8,35 @@ struct PreparedImage {
 
 @MainActor
 enum ImagePreparer {
+    static func prepare(data: Data, maxDimension: Int = 2_048) async -> PreparedImage? {
+        guard maxDimension > 0 else { return nil }
+
+        let decoded = await Task.detached(priority: .userInitiated) {
+            guard
+                let source = CGImageSourceCreateWithData(
+                    data as CFData,
+                    [kCGImageSourceShouldCache: false] as CFDictionary
+                ),
+                let image = CGImageSourceCreateThumbnailAtIndex(
+                    source,
+                    0,
+                    [
+                        kCGImageSourceCreateThumbnailFromImageAlways: true,
+                        kCGImageSourceCreateThumbnailWithTransform: true,
+                        kCGImageSourceThumbnailMaxPixelSize: maxDimension,
+                        kCGImageSourceShouldCacheImmediately: true,
+                    ] as CFDictionary
+                )
+            else {
+                return nil as SendableCGImage?
+            }
+            return SendableCGImage(value: image)
+        }.value
+
+        guard let cgImage = decoded?.value else { return nil }
+        return PreparedImage(image: UIImage(cgImage: cgImage), cgImage: cgImage)
+    }
+
     static func prepare(_ image: UIImage, maxDimension: CGFloat = 2_048) -> PreparedImage? {
         guard image.size.width > 0, image.size.height > 0 else { return nil }
 
@@ -32,4 +62,8 @@ enum ImagePreparer {
 
         return PreparedImage(image: renderedImage, cgImage: cgImage)
     }
+}
+
+private struct SendableCGImage: @unchecked Sendable {
+    let value: CGImage
 }
