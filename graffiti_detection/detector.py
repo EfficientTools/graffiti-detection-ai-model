@@ -1,7 +1,7 @@
 """High-level detector interface for library users."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 
 import numpy as np
 
@@ -56,3 +56,22 @@ class GraffitiDetector:
             )
 
         return detections
+
+    def benchmark(
+        self,
+        sources: Iterable[Union[str, Path, np.ndarray]],
+        *,
+        warmup_runs: int = 1,
+        measured_runs: int = 3,
+        predict_kwargs: Optional[Mapping[str, Any]] = None,
+    ):
+        """Benchmark steady-state single-image inference on this detector."""
+        from graffiti_detection.benchmark import benchmark_detector
+
+        return benchmark_detector(
+            self,
+            sources,
+            warmup_runs=warmup_runs,
+            measured_runs=measured_runs,
+            predict_kwargs=predict_kwargs,
+        )
