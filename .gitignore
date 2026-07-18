@@ -63,6 +63,7 @@ data/labels/*
 *.bmp
 *.tiff
 *.webp
+!assets/examples/graffiti-wall.jpg
 !ios/GraffitiGuard/GraffitiGuard/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 !ios/GraffitiGuard/GraffitiGuard/Resources/Assets.xcassets/DemoStreet.imageset/DemoStreet.png
 !ios/GraffitiGuard/AppStore/Screenshots/**/*.png

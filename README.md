@@ -54,14 +54,30 @@ python -m pip install -e ".[dev]"
 
 ## Python Usage
 
+Run a trained model against the included example image:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/EfficientTools/graffiti-detection-ai-model/main/assets/examples/graffiti-wall.jpg" alt="Graffiti painted on a city wall" width="760" />
+</p>
+
 ```python
 from graffiti_detection import GraffitiDetector
 
 detector = GraffitiDetector("models/best.pt", conf_threshold=0.25)
-detections = detector.predict("image.jpg")
+example_image = (
+    "https://raw.githubusercontent.com/EfficientTools/"
+    "graffiti-detection-ai-model/main/assets/examples/graffiti-wall.jpg"
+)
+detections = detector.predict(example_image)
+
+for detection in detections:
+    print(
+        f"{detection['class_name']}: {detection['confidence']:.1%} "
+        f"at {detection['box']}"
+    )
 ```
 
-Each detection contains `class_id`, `class_name`, `confidence`, and an `xyxy` box.
+Replace `example_image` with a local image path for your own detection. Each result contains `class_id`, `class_name`, `confidence`, and an `xyxy` box.
 
 ## Command Line
 
