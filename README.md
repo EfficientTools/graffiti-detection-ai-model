@@ -13,6 +13,18 @@
 
 YOLOv8-based graffiti detection for Python applications, model training, batch inference, camera monitoring, alerts, and API integration.
 
+## App for iPhone and iPad
+
+Prefer a ready-to-use mobile experience? Graffiti Guard runs private, offline detection directly on iPhone and iPad, with an inspection-focused iPad interface and shareable results.
+
+<p align="center">
+  <a href="https://apps.apple.com/app/id6792218806">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download Graffiti Guard on the App Store" height="54" />
+  </a>
+</p>
+
+<p align="center"><sub>Version 1.0 is awaiting App Review. The link becomes active when Apple publishes the app.</sub></p>
+
 ## Why I Built It
 
 I built this project because I hate seeing Melbourne and other cities damaged by unwanted graffiti. Earlier image review can help councils and maintenance teams prioritize work before cleanup costs and repeated surface damage escalate.
@@ -149,6 +161,8 @@ AI software engineer and consultant building practical computer vision systems f
 ## License
 
 Distributed under the [MIT License](https://github.com/EfficientTools/graffiti-detection-ai-model/blob/main/LICENSE).
+
+Apple, the Apple logo, App Store, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries.
 
 ## Responsible Use
 
