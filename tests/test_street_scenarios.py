@@ -557,6 +557,8 @@ class TestStreetConfigIntegrity(unittest.TestCase):
         self.assertGreater(cfg["lr0"], 0)
         self.assertLessEqual(cfg["lr0"], 0.1)
         self.assertGreater(cfg["batch"], 0)
+        self.assertIsInstance(cfg["seed"], int)
+        self.assertTrue(cfg["deterministic"])
 
 
 # ═══════════════════════════════════════════════════════════════════════════

@@ -190,6 +190,13 @@ def main():
         patience=config.get("patience", 50),
         plots=config.get("plots", True),
         amp=config.get("amp", True),
+        seed=config.get("seed", 0),
+        deterministic=config.get("deterministic", True),
+        cos_lr=config.get("cos_lr", True),
+        close_mosaic=config.get("close_mosaic", 10),
+        max_det=config.get("max_det", 300),
+        rect=config.get("rect", False),
+        single_cls=config.get("single_cls", False),
         resume=args.resume,
     )
 

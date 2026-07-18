@@ -56,7 +56,8 @@ dropout: 0.0  # Dropout rate
 workers: 8  # Number of worker threads for data loading
 device: 0  # CUDA device (0, 1, ...) or 'cpu'
 amp: True  # Automatic Mixed Precision training
-deterministic: False  # Deterministic training for reproducibility
+seed: 0  # Reproducible data ordering and augmentation seed
+deterministic: True  # Prefer repeatable training over nondeterministic speedups
 
 # Validation
 val: True  # Validate during training
