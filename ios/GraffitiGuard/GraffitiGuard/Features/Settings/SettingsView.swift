@@ -82,14 +82,19 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Section("Creator") {
-                    Label("Pierre-Henry Soria", systemImage: "person.crop.square.filled.and.at.rectangle")
-                    Text("AI software engineer and consultant building practical computer vision systems.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-
+                Section("Credits") {
                     Link(destination: URL(string: "https://pierrehenry.dev")!) {
-                        Label("Work with Pierre-Henry", systemImage: "arrow.up.right")
+                        Label("Pierre-Henry Soria", systemImage: "person.crop.square.filled.and.at.rectangle")
+                    }
+
+                    Text(
+                        "Creator, AI software engineer, and consultant specialising in computer vision, on-device machine learning, privacy-conscious systems, and production AI deployment."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                    Link(destination: URL(string: "https://github.com/EfficientTools/graffiti-detection-ai-model")!) {
+                        Label("Python library and reusable patterns", systemImage: "shippingbox.fill")
                     }
                 }
             }
