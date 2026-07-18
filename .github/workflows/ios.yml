@@ -1,6 +1,7 @@
 name: Apple Client
 
 on:
+  workflow_call:
   push:
     branches: [main]
     paths:
