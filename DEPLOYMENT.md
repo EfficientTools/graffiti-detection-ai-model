@@ -1,142 +1,51 @@
-# Graffiti Detection AI - Deployment Guide
+# Deployment
 
-## Quick Deploy Options
+The repository ships a Docker image for the FastAPI service and an optional Compose profile for multi-camera monitoring. Provide your own trained model at `models/best.pt` before starting either service.
 
-### 1. Docker Deployment (Recommended)
+## API Container
 
-#### Build and Run
 ```bash
-# Build image
-docker build -t graffiti-detector:latest .
-
-# Run API service
-docker run -d \
-  --name graffiti-api \
-  --gpus all \
+docker build -t graffiti-detection-ai:1.3.0 .
+docker run --rm \
   -p 8000:8000 \
-  -v $(pwd)/models:/app/models \
-  -v $(pwd)/outputs:/app/outputs \
-  graffiti-detector:latest
-
-# Test API
-curl http://localhost:8000/
+  -v "$(pwd)/models:/app/models:ro" \
+  -v graffiti-detection-output:/app/outputs \
+  graffiti-detection-ai:1.3.0
 ```
 
-#### Using Docker Compose
-```bash
-# Start all services
-docker-compose up -d
+The default image is portable and CPU-compatible. GPU deployments should use a PyTorch base image that matches the host CUDA runtime. Check service health at `http://localhost:8000/`.
 
-# View logs
-docker-compose logs -f
+## Docker Compose
 
-# Stop services
-docker-compose down
-```
-
-### 2. Kubernetes Deployment
+Start the API:
 
 ```bash
-# Apply deployment
-kubectl apply -f deployment/k8s-deployment.yaml
-
-# Check status
-kubectl get pods -l app=graffiti-detector
-
-# Get service URL
-kubectl get service graffiti-detector-service
+docker compose up -d api
 ```
 
-### 3. Edge Device (NVIDIA Jetson)
+To add camera monitoring, create local configuration files first:
 
 ```bash
-# Export model to TensorRT
-yolo export model=models/best.pt format=engine device=0
-
-# Run optimized inference
-python scripts/inference.py \
-  --model models/best.engine \
-  --source rtsp://camera-ip/stream \
-  --conf-threshold 0.25 \
-  --alert-config configs/alerts.json
+cp configs/cameras_example.json configs/cameras.json
+cp configs/alerts_example.json configs/alerts.json
+docker compose --profile surveillance up -d
 ```
 
-### 4. Cloud Deployment
+The real configuration files are ignored by Git because they can contain camera credentials and alert secrets.
 
-#### AWS (EC2 with GPU)
-```bash
-# Launch g4dn.xlarge instance
-# Install NVIDIA drivers and Docker
-# Deploy using Docker commands above
-```
+## Environment
 
-#### GCP (Compute Engine with GPU)
-```bash
-# Create instance with GPU
-gcloud compute instances create graffiti-detector \
-  --machine-type=n1-standard-4 \
-  --accelerator=type=nvidia-tesla-t4,count=1 \
-  --image-family=ubuntu-2004-lts \
-  --image-project=ubuntu-os-cloud
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `MODEL_PATH` | `models/best.pt` | Model loaded by the API |
+| `LOG_LEVEL` | `INFO` | Application log level |
+| `TZ` | `UTC` | Surveillance container timezone |
 
-# SSH and deploy
-```
+## Production Checklist
 
-## Production Configuration
-
-### Environment Variables
-```bash
-export MODEL_PATH=/app/models/best.pt
-export ALERT_CONFIG=/app/configs/alerts.json
-export LOG_LEVEL=INFO
-export API_PORT=8000
-```
-
-### Monitoring & Logging
-- Logs: `outputs/logs/`
-- Detections: `outputs/detections/`
-- Metrics: Available via API `/stats` endpoint
-
-### Security
-- Use HTTPS in production
-- Implement API authentication
-- Restrict camera access
-- Secure alert credentials
-
-## Performance Optimization
-
-### Model Selection
-- **Real-time (>30 FPS)**: YOLOv8n
-- **Balanced**: YOLOv8s
-- **High Accuracy**: YOLOv8m/l
-
-### Hardware Recommendations
-- **Edge Devices**: NVIDIA Jetson Nano/Xavier
-- **Server**: GPU with 8GB+ VRAM
-- **Cloud**: AWS g4dn.xlarge or GCP n1-standard-4 with T4
-
-## Scaling
-
-### Load Balancing
-Use nginx or cloud load balancers to distribute requests across multiple API instances.
-
-### Multi-Camera
-Each camera runs in a separate thread. For >10 cameras, consider distributed deployment.
-
-## Troubleshooting
-
-### GPU Not Detected
-```bash
-nvidia-smi  # Check GPU availability
-docker run --gpus all nvidia/cuda:11.8.0-base-ubuntu22.04 nvidia-smi
-```
-
-### Out of Memory
-- Reduce batch size
-- Use smaller model variant (yolov8n)
-- Reduce image size
-
-### Camera Connection Issues
-- Verify RTSP URL format
-- Check network connectivity
-- Test with VLC: `vlc rtsp://camera-ip/stream`
+- Terminate TLS at a reverse proxy or load balancer.
+- Add authentication and request limits before exposing the API publicly.
+- Store camera and alert credentials in a secret manager or mounted read-only files.
+- Restrict access to camera networks, models, saved detections, and logs.
+- Set retention rules that comply with local privacy requirements.
+- Pin the image tag and scan it before deployment.

@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -13,46 +14,75 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-and-build:
-    runs-on: ubuntu-latest
+  test:
+    name: Test Python ${{ matrix.python-version }}
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.11"]
+        python-version: ["3.9", "3.13"]
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-          cache-dependency-path: |
-            requirements.txt
-            pyproject.toml
+          cache-dependency-path: pyproject.toml
 
-      - name: Upgrade packaging tools
-        run: python -m pip install --upgrade pip setuptools wheel
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Check code quality
+        if: matrix.python-version == '3.13'
+        run: |
+          ruff check .
+          ruff format --check .
 
-      - name: Install test/build tools
-        run: pip install pytest build twine
+      - name: Run test suite
+        run: pytest -q -m "not gpu"
 
-      - name: Run tests
-        run: pytest tests/ -q -m "not gpu"
+  package:
+    name: Validate package
+    needs: test
+    runs-on: ubuntu-24.04
 
-      - name: Build package
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install packaging tools
+        run: python -m pip install --upgrade build twine
+
+      - name: Build distributions
         run: python -m build
 
       - name: Validate package metadata
-        run: twine check dist/*
+        run: twine check --strict dist/*
 
-      - name: Verify wheel install and import smoke test
-        if: matrix.python-version == '3.11'
+      - name: Verify wheel installation
         run: |
-          python -m pip install --force-reinstall dist/*.whl
-          python -c "from importlib.metadata import version; from graffiti_detection import __version__; from graffiti_detection.evaluation.metrics import calculate_iou; import numpy as np; assert version('graffiti-detection-ai-model') == __version__; assert calculate_iou(np.array([0,0,1,1]), np.array([0,0,1,1])) == 1.0"
+          python -m venv /tmp/wheel-smoke
+          /tmp/wheel-smoke/bin/python -m pip install --upgrade pip
+          /tmp/wheel-smoke/bin/python -m pip install dist/*.whl
+          cd /tmp
+          /tmp/wheel-smoke/bin/python -c "from importlib.metadata import version; from graffiti_detection import __version__; assert version('graffiti-detection-ai-model') == __version__"
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: python-package-distributions
+          path: dist/
+          if-no-files-found: error

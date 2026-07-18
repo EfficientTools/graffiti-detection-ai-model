@@ -1,134 +1,82 @@
 # Graffiti Detection AI Model
 
 <p align="center">
-  <img src="assets/graffiti-detection-logo.svg" alt="Graffiti Detection AI logo" width="980" />
+  <img src="assets/graffiti-detection-logo.svg" alt="Graffiti Detection AI logo" width="780" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/EfficientTools/graffiti-detection-ai-model/actions/workflows/ci.yml">
-    <img src="https://github.com/EfficientTools/graffiti-detection-ai-model/actions/workflows/ci.yml/badge.svg" alt="CI" />
-  </a>
-  <a href="https://pypi.org/project/graffiti-detection-ai-model/">
-    <img src="https://img.shields.io/pypi/v/graffiti-detection-ai-model" alt="PyPI version" />
-  </a>
-  <a href="https://pypi.org/project/graffiti-detection-ai-model/">
-    <img src="https://img.shields.io/pypi/pyversions/graffiti-detection-ai-model" alt="Python versions" />
-  </a>
-  <a href="LICENSE.md">
-    <img src="https://img.shields.io/badge/license-MIT-blue" alt="License: MIT" />
-  </a>
+  <a href="https://github.com/EfficientTools/graffiti-detection-ai-model/actions/workflows/ci.yml"><img src="https://github.com/EfficientTools/graffiti-detection-ai-model/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://pypi.org/project/graffiti-detection-ai-model/"><img src="https://img.shields.io/pypi/v/graffiti-detection-ai-model" alt="PyPI version" /></a>
+  <a href="https://pypi.org/project/graffiti-detection-ai-model/"><img src="https://img.shields.io/pypi/pyversions/graffiti-detection-ai-model" alt="Supported Python versions" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
 </p>
 
-AI-powered graffiti detection built on YOLOv8 for training, inference, surveillance, alerting, and API integration.
+YOLOv8-based graffiti detection for Python applications, model training, batch inference, camera monitoring, alerts, and API integration.
 
-Built for municipalities, property managers, security teams, and developers who need a practical computer vision pipeline for detecting graffiti in the field.
+## Why I Built It
 
-## Why I Built This
+I built this project because I hate seeing my city being destroyed and ruined by graffiti. It is intended to help maintenance and response teams detect incidents earlier and act faster.
 
-I built this project to help teams detect graffiti earlier, respond faster, and reduce the operational cost of vandalism. The focus is not just model training, but a usable end-to-end workflow that can plug into real monitoring and reporting pipelines.
+## What Makes It Useful
 
-## At a Glance
+- A small Python API for image inference
+- End-to-end scripts for dataset preparation, training, evaluation, and video inference
+- Multi-camera monitoring with email, SMS, webhook, Discord, Slack, and OneSignal alerts
+- FastAPI and Docker deployment options
+- Street-scene augmentation for poor lighting, weather, perspective, and CCTV artifacts
 
-- Train YOLOv8 models on graffiti datasets in YOLO format
-- Run inference on images, folders, videos, and live webcams
-- Monitor multiple camera feeds and trigger alert channels automatically
-- Expose a FastAPI service for integration with existing systems
-- Log incidents for downstream reporting and operational follow-up
-
-## What This Project Does
-
-- Trains YOLOv8 models on graffiti datasets (YOLO annotation format)
-- Runs inference on single images, folders, videos, and webcam streams
-- Monitors multiple cameras in real time and triggers alert channels
-- Exposes a FastAPI service for integration with existing systems
-- Logs incidents to SQLite/JSON and supports daily reporting
-
-## Highlights
-
-- End-to-end pipeline in one repo: data prep -> training -> inference -> surveillance -> API -> incident tracking
-- Production-oriented scripts (not notebook-only)
-- Alert channel support: email, SMS, webhook, Discord, Slack
-- Test coverage across data, metrics, alerts, visualization, incident logging, and integration
-
-## Good Fit For
-
-- City maintenance and anti-vandalism monitoring pilots
-- Property and facility surveillance workflows
-- AI engineers who want a packaged YOLOv8 graffiti detection baseline
-- Teams that need both Python package usage and runnable scripts
-
-## Requirements
-
-- Python 3.8+
-- CUDA-capable GPU (recommended for training / real-time workloads)
-- Dataset in YOLO format (`class x_center y_center width height`)
+Model weights are not bundled. Train a model with this project or provide compatible Ultralytics YOLO weights.
 
 ## Installation
 
-Choose the setup that matches your use case.
-
-Install from PyPI for package usage:
+Python 3.9 or newer is required.
 
 ```bash
 pip install graffiti-detection-ai-model
 ```
 
-Install from source if you want the full training, scripts, and deployment workflow:
+Install every runtime feature for training, alerts, and the API:
+
+```bash
+pip install "graffiti-detection-ai-model[all]"
+```
+
+For development from source:
 
 ```bash
 git clone https://github.com/EfficientTools/graffiti-detection-ai-model.git
 cd graffiti-detection-ai-model
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+source venv/bin/activate
+python -m pip install -e ".[dev]"
 ```
 
-Quick import example:
+## Python Usage
 
 ```python
 from graffiti_detection import GraffitiDetector
 
-detector = GraffitiDetector("models/best.pt")
+detector = GraffitiDetector("models/best.pt", conf_threshold=0.25)
 detections = detector.predict("image.jpg")
 ```
 
-## Quick Start
+Each detection contains `class_id`, `class_name`, `confidence`, and an `xyxy` box.
 
-### 1. Prepare dataset
+## Command Line
 
 ```bash
+# Prepare a YOLO-format dataset
 python scripts/prepare_dataset.py --data-dir data/raw --output-dir data --validate --copy
-```
 
-### 2. Train model
-
-```bash
+# Train and evaluate
 python scripts/train.py --data configs/dataset.yaml --model yolov8n --epochs 100
-```
-
-### 3. Run inference
-
-```bash
-python scripts/inference.py --model models/best.pt --source image.jpg
-python scripts/inference.py --model models/best.pt --source 0 --show
-```
-
-### 4. Evaluate
-
-```bash
 python scripts/evaluate.py --model models/best.pt --data configs/dataset.yaml --split test
+
+# Run image, directory, video, or webcam inference
+python scripts/inference.py --model models/best.pt --source image.jpg
 ```
 
-## Real-Time Surveillance and Alerts
-
-Use the example configs as a base:
-
-```bash
-cp configs/cameras_example.json configs/cameras.json
-cp configs/alerts_example.json configs/alerts.json
-```
-
-Run multi-camera monitoring:
+For camera monitoring, copy the example camera and alert files, insert your own credentials locally, then run:
 
 ```bash
 python scripts/multi_camera_surveillance.py \
@@ -137,75 +85,41 @@ python scripts/multi_camera_surveillance.py \
   --alert-config configs/alerts.json
 ```
 
-Optional utilities:
+Start the API with:
 
 ```bash
-python scripts/real_time_dashboard.py --stats-file outputs/stats.json
-python scripts/incident_logger.py --action stats --period today
+MODEL_PATH=models/best.pt uvicorn api.graffiti_detector:app --host 0.0.0.0 --port 8000
 ```
 
-## API
+See [DEPLOYMENT.md](DEPLOYMENT.md) for Docker instructions.
 
-Start API service:
+## Development
 
 ```bash
-uvicorn api.graffiti_detector:app --host 0.0.0.0 --port 8000
-```
-
-Main endpoints:
-
-- `GET /`
-- `POST /detect`
-- `POST /detect/annotated`
-- `POST /detect/batch`
-- `GET /stats`
-
-## Testing
-
-```bash
-python tests/run_tests.py
-# or
-pytest tests/
-```
-
-## Deployment
-
-For Docker/Compose/Kubernetes/edge/cloud setup, see [DEPLOYMENT.md](DEPLOYMENT.md).
-
-## Project Structure
-
-```text
-api/                 FastAPI service
-configs/             Dataset, training, cameras, alerts configs
-graffiti_detection/  Public Python package
-scripts/             Training, inference, evaluation, surveillance, dashboard tools
-src/                 Backward-compatible internal modules
-tests/               Unit and integration tests
+ruff check .
+pytest tests/ -m "not gpu"
+python -m build
+twine check dist/*
 ```
 
 ## Author
 
 <div align="center">
 
-[![Pierre-Henry Soria](https://s.gravatar.com/avatar/a210fe61253c43c869d71eaed0e90149?s=200 "Pierre-Henry Soria - Software AI Engineer")](https://pierrehenry.dev)
+[![Pierre-Henry Soria](https://s.gravatar.com/avatar/a210fe61253c43c869d71eaed0e90149?s=160 "Pierre-Henry Soria")](https://pierrehenry.dev)
 
 **Pierre-Henry Soria**
 
-Passionate software AI engineer building intelligent systems to solve real-world problems.
+Software AI engineer building practical systems for real-world problems.
 
-☕️ Enjoying this project? [Buy me a coffee](https://ko-fi.com/phenry) to support more AI innovations!
-
-
-[![BlueSky](https://img.shields.io/badge/BlueSky-000000?style=for-the-badge&logo=bluesky&logoColor=white)](https://bsky.app/profile/pierrehenry.dev "Follow Me on BlueSky")
-[![@phenrysay](https://img.shields.io/badge/x-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/phenrysay "Follow Me on X")
-[![pH-7](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/pH-7 "Follow Me on GitHub")
+[Website](https://pierrehenry.dev) | [GitHub](https://github.com/pH-7) | [Bluesky](https://bsky.app/profile/pierrehenry.dev) | [X](https://x.com/phenrysay) | [Support](https://ko-fi.com/phenry)
 
 </div>
 
 ## License
 
-This project is distributed under the [MIT License](LICENSE.md).
+Distributed under the [MIT License](LICENSE).
 
-## Disclaimer
+## Responsible Use
 
-This model is intended to assist maintenance and urban management teams. Always comply with local privacy and surveillance regulations when deploying computer vision systems.
+Comply with local privacy, surveillance, and data-retention laws. Human review should remain part of any enforcement or response process.

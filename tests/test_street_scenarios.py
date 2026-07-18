@@ -12,8 +12,6 @@ Run:
 """
 
 import json
-import math
-import os
 import shutil
 import tempfile
 import unittest
@@ -25,36 +23,34 @@ import numpy as np
 import pytest
 import yaml
 
-from src.data.augmentation import (
-    get_street_scene_augmentation,
-    get_training_augmentation,
-    get_validation_augmentation,
-    get_augmentation_by_preset,
+from graffiti_detection.data.augmentation import (
     AUGMENTATION_PRESETS,
+    get_augmentation_by_preset,
+    get_street_scene_augmentation,
 )
-from src.data.preprocessing import (
+from graffiti_detection.data.dataset import GraffitiDataset
+from graffiti_detection.data.preprocessing import (
+    apply_clahe,
     letterbox,
+    normalize_image,
+    postprocess_boxes,
     preprocess_image,
     preprocess_street_scene,
-    postprocess_boxes,
-    normalize_image,
-    apply_clahe,
     simulate_street_conditions,
 )
-from src.data.dataset import GraffitiDataset
-from src.evaluation.metrics import (
-    calculate_iou,
+from graffiti_detection.evaluation.metrics import (
+    DetectionMetrics,
     calculate_ap,
+    calculate_iou,
     calculate_map,
     calculate_precision_recall_f1,
     non_max_suppression,
-    DetectionMetrics,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers – synthetic images that mimic common street scenes
 # ---------------------------------------------------------------------------
+
 
 def _make_street_image(
     width: int = 640,
@@ -146,6 +142,7 @@ def _create_temp_dataset(
 # 1. STREET-SCENE PREPROCESSING
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 @pytest.mark.pipeline
 class TestStreetPreprocessing(unittest.TestCase):
     """Validate preprocessing pipeline on synthetic street images."""
@@ -167,8 +164,7 @@ class TestStreetPreprocessing(unittest.TestCase):
         for h, w in [(720, 1280), (1080, 1920), (480, 854), (240, 320)]:
             img = np.random.randint(0, 255, (h, w, 3), dtype=np.uint8)
             resized, _, _ = letterbox(img, new_shape=640)
-            self.assertEqual(resized.shape[:2], (640, 640),
-                             f"Failed for input size ({h},{w})")
+            self.assertEqual(resized.shape[:2], (640, 640), f"Failed for input size ({h},{w})")
 
     # -- street-specific preprocessing -----------------------------------
 
@@ -225,13 +221,16 @@ class TestStreetPreprocessing(unittest.TestCase):
 
     def test_postprocess_identity(self):
         boxes = np.array([[100.0, 100.0, 200.0, 200.0]])
-        out = postprocess_boxes(boxes, original_shape=(480, 640), ratio=(1.0, 1.0), padding=(0.0, 0.0))
+        out = postprocess_boxes(
+            boxes, original_shape=(480, 640), ratio=(1.0, 1.0), padding=(0.0, 0.0)
+        )
         np.testing.assert_array_almost_equal(out, boxes)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
 # 2. STREET-SCENE AUGMENTATION
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 @pytest.mark.pipeline
 class TestStreetAugmentation(unittest.TestCase):
@@ -293,6 +292,7 @@ class TestStreetAugmentation(unittest.TestCase):
 # 3. DATASET LOADING UNDER STREET CONDITIONS
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 @pytest.mark.pipeline
 class TestStreetDataset(unittest.TestCase):
     """Load street-scenario data through GraffitiDataset."""
@@ -321,16 +321,18 @@ class TestStreetDataset(unittest.TestCase):
     def test_dataset_with_street_augmentation(self):
         """Apply street augmentation directly to images loaded from the dataset.
 
-        Note: The dataset converts YOLO labels to pixel-xyxy before calling
-        the augmentation, so we test the augmentation standalone using YOLO
-        format (consistent with the existing test pattern in test_augmentation).
+        The standalone transform accepts the same normalized YOLO boxes as the
+        dataset's augmentation path.
         """
         transform = get_street_scene_augmentation(img_size=640)
         ds = GraffitiDataset(self.img_paths, self.lbl_paths, img_size=640, augment=False)
         for i in range(len(ds)):
             img, labels = ds[i]
-            yolo_boxes = [[float(l[1]), float(l[2]), float(l[3]), float(l[4])] for l in labels]
-            cls_labels = [int(l[0]) for l in labels]
+            yolo_boxes = [
+                [float(label[1]), float(label[2]), float(label[3]), float(label[4])]
+                for label in labels
+            ]
+            cls_labels = [int(label[0]) for label in labels]
             result = transform(image=img, bboxes=yolo_boxes, class_labels=cls_labels)
             self.assertIn("image", result)
             self.assertEqual(result["image"].shape[:2], (640, 640))
@@ -382,6 +384,7 @@ class TestStreetDataset(unittest.TestCase):
 # 4. DETECTION METRICS – STREET-REALISTIC SCENARIOS
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 @pytest.mark.pipeline
 class TestStreetMetrics(unittest.TestCase):
     """Metric calculations using realistic street-detection data."""
@@ -430,11 +433,14 @@ class TestStreetMetrics(unittest.TestCase):
 
     def test_nms_removes_duplicate_detections(self):
         """Overlapping boxes with lower scores should be suppressed."""
-        boxes = np.array([
-            [100, 100, 200, 200],
-            [105, 105, 205, 205],
-            [400, 400, 500, 500],
-        ], dtype=np.float32)
+        boxes = np.array(
+            [
+                [100, 100, 200, 200],
+                [105, 105, 205, 205],
+                [400, 400, 500, 500],
+            ],
+            dtype=np.float32,
+        )
         scores = np.array([0.9, 0.75, 0.85])
         keep = non_max_suppression(boxes, scores, iou_threshold=0.5)
         self.assertIn(0, keep)
@@ -476,6 +482,7 @@ class TestStreetMetrics(unittest.TestCase):
 # 5. ALERT SYSTEM – STREET DETECTION EVENTS
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 @pytest.mark.pipeline
 class TestStreetAlerts(unittest.TestCase):
     """Validate the alert manager works with street-scenario detection data."""
@@ -490,12 +497,14 @@ class TestStreetAlerts(unittest.TestCase):
         }
 
     def test_alert_manager_initialises_without_channels(self):
-        from src.utils.alerts import AlertManager
+        from graffiti_detection.utils.alerts import AlertManager
+
         mgr = AlertManager(config={})
         self.assertEqual(len(mgr.alert_channels), 0)
 
     def test_alert_manager_send_no_channels_does_not_crash(self):
-        from src.utils.alerts import AlertManager
+        from graffiti_detection.utils.alerts import AlertManager
+
         mgr = AlertManager(config={})
         mgr.send_alert(self._detection_event())
 
@@ -513,6 +522,7 @@ class TestStreetAlerts(unittest.TestCase):
 # ═══════════════════════════════════════════════════════════════════════════
 # 6. CONFIG INTEGRITY
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 @pytest.mark.pipeline
 class TestStreetConfigIntegrity(unittest.TestCase):
@@ -553,6 +563,7 @@ class TestStreetConfigIntegrity(unittest.TestCase):
 # 7. END-TO-END PIPELINE SIMULATION
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 @pytest.mark.pipeline
 class TestEndToEndStreetPipeline(unittest.TestCase):
     """
@@ -562,7 +573,9 @@ class TestEndToEndStreetPipeline(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tmp, cls.img_paths, cls.lbl_paths = _create_temp_dataset(n_images=4, n_boxes_per_image=2)
+        cls.tmp, cls.img_paths, cls.lbl_paths = _create_temp_dataset(
+            n_images=4, n_boxes_per_image=2
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -592,7 +605,9 @@ class TestEndToEndStreetPipeline(unittest.TestCase):
 
             # Post-process
             original_shape = img.shape[:2]
-            adjusted = postprocess_boxes(boxes, original_shape, ratio=(1.0, 1.0), padding=(0.0, 0.0))
+            adjusted = postprocess_boxes(
+                boxes, original_shape, ratio=(1.0, 1.0), padding=(0.0, 0.0)
+            )
             self.assertEqual(adjusted.shape[1], 4)
 
     def test_metrics_after_mock_evaluation(self):
@@ -625,13 +640,18 @@ class TestEndToEndStreetPipeline(unittest.TestCase):
         """Iterate dataset, apply street augmentation standalone per sample."""
         transform = get_street_scene_augmentation(img_size=640)
         ds = GraffitiDataset(
-            self.img_paths, self.lbl_paths,
-            img_size=640, augment=False,
+            self.img_paths,
+            self.lbl_paths,
+            img_size=640,
+            augment=False,
         )
         for i in range(len(ds)):
             img, labels = ds[i]
-            yolo_boxes = [[float(l[1]), float(l[2]), float(l[3]), float(l[4])] for l in labels]
-            cls_labels = [int(l[0]) for l in labels]
+            yolo_boxes = [
+                [float(label[1]), float(label[2]), float(label[3]), float(label[4])]
+                for label in labels
+            ]
+            cls_labels = [int(label[0]) for label in labels]
             result = transform(image=img, bboxes=yolo_boxes, class_labels=cls_labels)
             self.assertIn("image", result)
 
@@ -639,6 +659,7 @@ class TestEndToEndStreetPipeline(unittest.TestCase):
 # ═══════════════════════════════════════════════════════════════════════════
 # 8. EDGE CASES & ROBUSTNESS
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 @pytest.mark.pipeline
 class TestStreetEdgeCases(unittest.TestCase):
@@ -685,8 +706,7 @@ class TestStreetEdgeCases(unittest.TestCase):
 
     def test_box_at_image_boundary(self):
         """Graffiti partially out of frame."""
-        boxes = np.array([[0.0, 0.0, 50.0, 50.0],
-                          [600.0, 440.0, 650.0, 490.0]])
+        boxes = np.array([[0.0, 0.0, 50.0, 50.0], [600.0, 440.0, 650.0, 490.0]])
         clipped = postprocess_boxes(boxes, (480, 640), ratio=(1.0, 1.0), padding=(0.0, 0.0))
         self.assertTrue((clipped[:, 0] >= 0).all())
         self.assertTrue((clipped[:, 2] <= 640).all())

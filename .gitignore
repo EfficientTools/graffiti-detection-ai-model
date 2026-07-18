@@ -70,11 +70,10 @@ models/*.pth
 models/*.onnx
 models/*.engine
 models/*.tflite
-models/checkpoints/*
 !models/.gitkeep
-!models/checkpoints/.gitkeep
 
 # Outputs
+outputs/detections/
 outputs/logs/*
 outputs/visualizations/*
 outputs/metrics/*
@@ -133,3 +132,4 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+.ruff_cache/
