@@ -56,6 +56,30 @@ struct SettingsView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+
+                Section("Purpose") {
+                    Label("Made for cleaner public spaces", systemImage: "building.2.fill")
+                    Text(
+                        "Motivated by recurring graffiti cleanup challenges visible in Melbourne and cities worldwide, Graffiti Guard helps residents and field teams review images earlier and coordinate maintenance."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                    Text("The app detects likely graffiti in images; it does not predict future vandalism.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                Section("Creator") {
+                    Label("Pierre-Henry Soria", systemImage: "person.crop.square.filled.and.at.rectangle")
+                    Text("AI software engineer and consultant building practical computer vision systems.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+
+                    Link(destination: URL(string: "https://pierrehenry.dev")!) {
+                        Label("Work with Pierre-Henry", systemImage: "arrow.up.right")
+                    }
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)

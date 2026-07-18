@@ -1,1 +1,1 @@
-graffiti,detection,offline,privacy,computer vision,street,maintenance,Core ML
+graffiti,vandalism,detection,offline,privacy,council,inspection,maintenance,Core ML

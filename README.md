@@ -15,7 +15,7 @@ YOLOv8-based graffiti detection for Python applications, model training, batch i
 
 ## Why I Built It
 
-I built this project because I hate seeing my city being destroyed and ruined by graffiti. It is intended to help maintenance and response teams detect incidents earlier and act faster.
+I built this project because I hate seeing Melbourne and other cities damaged by unwanted graffiti. Earlier image review can help councils and maintenance teams prioritize work before cleanup costs and repeated surface damage escalate.
 
 ## What Makes It Useful
 
@@ -24,6 +24,7 @@ I built this project because I hate seeing my city being destroyed and ruined by
 - Multi-camera monitoring with email, SMS, webhook, Discord, Slack, and OneSignal alerts
 - FastAPI and Docker deployment options
 - Private, offline Core ML inference on iPhone and iPad
+- Shareable, human-reviewable inspection summaries on iPad
 - Street-scene augmentation for poor lighting, weather, perspective, and CCTV artifacts
 
 Training weights are not bundled. The Apple client includes an MIT-licensed Core ML detector for offline use; see [Third-Party Notices](https://github.com/EfficientTools/graffiti-detection-ai-model/blob/main/THIRD_PARTY_NOTICES.md).
@@ -112,7 +113,7 @@ See [DEPLOYMENT.md](https://github.com/EfficientTools/graffiti-detection-ai-mode
 
 ## iPhone and iPad
 
-The universal SwiftUI app in [`ios/GraffitiGuard`](https://github.com/EfficientTools/graffiti-detection-ai-model/tree/main/ios/GraffitiGuard) runs its bundled Core ML detector entirely on-device and overlays detected regions. To replace it with your own trained weights, export the model and regenerate the Xcode project:
+The universal SwiftUI app in [`ios/GraffitiGuard`](https://github.com/EfficientTools/graffiti-detection-ai-model/tree/main/ios/GraffitiGuard) runs its bundled Core ML detector entirely on-device and overlays likely graffiti regions. Its iPad workflow supports drag-and-drop intake, adjustable confidence, and shareable inspection summaries. To replace it with your own trained weights, export the model and regenerate the Xcode project:
 
 ```bash
 python -m pip install -e ".[apple]"
@@ -139,9 +140,9 @@ twine check dist/*
 
 **Pierre-Henry Soria**
 
-Software AI engineer building practical systems for real-world problems.
+AI software engineer and consultant building practical computer vision systems for real-world problems.
 
-[Website](https://pierrehenry.dev) | [GitHub](https://github.com/pH-7) | [Bluesky](https://bsky.app/profile/pierrehenry.dev) | [X](https://x.com/phenrysay) | [Support](https://ko-fi.com/phenry)
+[Work with Pierre-Henry](https://pierrehenry.dev) | [GitHub](https://github.com/pH-7) | [Bluesky](https://bsky.app/profile/pierrehenry.dev) | [X](https://x.com/phenrysay) | [Support](https://ko-fi.com/phenry)
 
 </div>
 

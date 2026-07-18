@@ -1,1 +1,1 @@
-Detect likely graffiti privately on your iPhone or iPad. Images stay on-device with offline Core ML processing.
+Private on-device graffiti detection for councils, field teams, and residents. Review street images on iPhone or iPad without uploading them.

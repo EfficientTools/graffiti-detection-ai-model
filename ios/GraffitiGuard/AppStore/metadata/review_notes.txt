@@ -3,5 +3,10 @@ No sign-in or demo account is required.
 To test without granting Photos or Camera access:
 1. Tap "Try sample scene."
 2. Tap "Detect graffiti."
+3. Use "Share report" to inspect the generated text summary.
+
+On iPad, reviewers can also drag an image into the scanner panel. Command-Return runs detection, Command-N starts a new inspection, and Command-Comma opens settings.
 
 The app runs its bundled Core ML model entirely on-device. It does not transmit images, collect user data, use analytics, or contact an inference server. Camera and photo-library access are only used when the reviewer selects those controls.
+
+Results identify likely graffiti in the selected image and require human review. The app does not predict future vandalism.

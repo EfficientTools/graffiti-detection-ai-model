@@ -1,6 +1,8 @@
 # Graffiti Guard for iPhone and iPad
 
-Graffiti Guard is a universal SwiftUI app that checks a camera capture or selected photo with a bundled Core ML model, then overlays every detected graffiti region. Inference is private, offline, and optimized for Apple silicon; the app has no server setting or network dependency.
+Graffiti Guard is a universal SwiftUI app that checks a camera capture or selected photo with a bundled Core ML model, then overlays likely graffiti regions. Inference is private, offline, and optimized for Apple silicon; the app has no server setting or network dependency.
+
+On iPad, field teams can drop in a photo, tune the confidence threshold, run detection with a hardware-keyboard shortcut, and share a referenced inspection summary. Results support human review; the app does not predict future vandalism.
 
 ## Run
 
