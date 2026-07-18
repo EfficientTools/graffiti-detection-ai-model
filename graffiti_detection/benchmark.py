@@ -12,8 +12,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Protocol, Seque
 class DetectorProtocol(Protocol):
     """Minimum detector contract required by the benchmark runner."""
 
-    def predict(self, source: Any, **predict_kwargs: Any) -> Sequence[Mapping[str, Any]]:
-        ...
+    def predict(self, source: Any, **predict_kwargs: Any) -> Sequence[Mapping[str, Any]]: ...
 
 
 @dataclass(frozen=True)

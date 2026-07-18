@@ -52,9 +52,7 @@ def test_benchmark_reports_latency_throughput_and_stability():
         (["street.jpg"], 1, 0, "measured_runs"),
     ],
 )
-def test_benchmark_rejects_invalid_configuration(
-    sources, warmup_runs, measured_runs, message
-):
+def test_benchmark_rejects_invalid_configuration(sources, warmup_runs, measured_runs, message):
     with pytest.raises(ValueError, match=message):
         benchmark_detector(
             StubDetector(),
