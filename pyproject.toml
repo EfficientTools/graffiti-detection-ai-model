@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "graffiti-detection-ai-model"
-description = "Graffiti detection package using YOLOv8 for training, inference, surveillance, and API integration."
+description = "YOLO graffiti detection for training, inference, surveillance, APIs, and offline Apple deployment."
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
@@ -13,7 +13,7 @@ dynamic = ["version"]
 authors = [
   { name = "Pierre-Henry Soria" }
 ]
-keywords = ["computer-vision", "graffiti", "yolo", "object-detection", "surveillance", "fastapi"]
+keywords = ["computer-vision", "coreml", "graffiti", "ios", "object-detection", "surveillance", "yolo"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -58,6 +58,9 @@ notebooks = [
   "jupyterlab>=4.0.0",
   "pandas>=2.0.0",
   "seaborn>=0.13.0"
+]
+apple = [
+  "coremltools>=9.0,<10"
 ]
 all = [
   "albumentations>=2.0.0,<3",
