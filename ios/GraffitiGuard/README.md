@@ -48,3 +48,9 @@ All image processing stays on-device and the privacy manifest declares no tracki
 ## Embedded Use
 
 `GraffitiDetecting` isolates inference from the SwiftUI interface. A later embedded target can preserve the same normalized image and bounding-box contract while replacing the Core ML implementation with its platform runtime.
+
+## Credits
+
+Created and engineered by [Pierre-Henry Soria](https://pierrehenry.dev), an AI software engineer and consultant specialising in computer vision, on-device machine learning, privacy-conscious systems, and production AI deployment.
+
+Graffiti Guard is the mobile companion to the open-source [Graffiti Detection AI Model Python library](https://pypi.org/project/graffiti-detection-ai-model/), which provides reusable training, evaluation, benchmarking, and deployment patterns.

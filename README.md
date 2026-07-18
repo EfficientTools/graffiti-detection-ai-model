@@ -179,15 +179,17 @@ python -m build
 twine check dist/*
 ```
 
-## Author
+## Credits
 
 <div align="center">
 
 [![Pierre-Henry Soria](https://s.gravatar.com/avatar/a210fe61253c43c869d71eaed0e90149?s=160 "Pierre-Henry Soria")](https://pierrehenry.dev)
 
-**Pierre-Henry Soria**
+**[Pierre-Henry Soria](https://pierrehenry.dev)**
 
-AI software engineer and consultant building practical computer vision systems for real-world problems.
+Creator and lead engineer of Graffiti Guard and the Graffiti Detection AI Model Python library. Pierre-Henry is an AI software engineer and consultant specialising in computer vision, on-device machine learning, privacy-conscious systems, Python, Swift, and production AI deployment.
+
+The open-source [Python library on PyPI](https://pypi.org/project/graffiti-detection-ai-model/) provides reusable detection, training, evaluation, benchmarking, and deployment patterns.
 
 [Work with Pierre-Henry](https://pierrehenry.dev) | [GitHub](https://github.com/pH-7) | [Bluesky](https://bsky.app/profile/pierrehenry.dev) | [X](https://x.com/phenrysay) | [Support](https://ko-fi.com/phenry)
 
