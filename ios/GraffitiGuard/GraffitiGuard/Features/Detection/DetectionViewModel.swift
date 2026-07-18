@@ -36,6 +36,10 @@ final class DetectionViewModel: ObservableObject {
         modelIsAvailable && image != nil && phase != .detecting
     }
 
+    var canReset: Bool {
+        image != nil || report != nil || errorMessage != nil
+    }
+
     func loadImageData(_ data: Data) {
         guard let image = UIImage(data: data) else {
             showError(DetectionError.invalidImage.localizedDescription)
@@ -66,6 +70,15 @@ final class DetectionViewModel: ObservableObject {
         phase = modelIsAvailable ? .ready : .modelUnavailable
     }
 
+    func reset() {
+        selectionID = UUID()
+        image = nil
+        cgImage = nil
+        report = nil
+        errorMessage = nil
+        phase = modelIsAvailable ? .empty : .modelUnavailable
+    }
+
     func detect(threshold: Double) async {
         guard modelIsAvailable else {
             showError(DetectionError.modelUnavailable.localizedDescription)
@@ -84,7 +97,11 @@ final class DetectionViewModel: ObservableObject {
             let result = try await detector.detect(image: cgImage, threshold: threshold)
             guard activeSelection == selectionID else { return }
 
-            report = DetectionReport(result: result, imageSize: image.size)
+            report = DetectionReport(
+                result: result,
+                imageSize: image.size,
+                threshold: threshold
+            )
             phase = .complete
         } catch is CancellationError {
             guard activeSelection == selectionID else { return }

@@ -5,10 +5,12 @@ import UIKit
 struct DetectionScreen: View {
     @StateObject private var viewModel = DetectionViewModel()
     @AppStorage("confidenceThreshold") private var confidenceThreshold = 0.25
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var showsCamera = false
     @State private var showsSettings = false
     @State private var didLoadStorePreview = false
+    @State private var isDropTargeted = false
 
     private var cameraIsAvailable: Bool {
         UIImagePickerController.isSourceTypeAvailable(.camera)
@@ -26,9 +28,9 @@ struct DetectionScreen: View {
                         ViewThatFits(in: .horizontal) {
                             HStack(alignment: .top, spacing: 22) {
                                 scannerCard
-                                    .frame(minWidth: 520)
+                                    .frame(minWidth: 600)
                                 controlCard
-                                    .frame(width: 330)
+                                    .frame(width: 370)
                             }
 
                             VStack(spacing: 18) {
@@ -37,7 +39,7 @@ struct DetectionScreen: View {
                             }
                         }
                     }
-                    .frame(maxWidth: 1_040)
+                    .frame(maxWidth: 1_260)
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
                     .padding(.bottom, 38)
@@ -46,13 +48,34 @@ struct DetectionScreen: View {
                 .scrollBounceBehavior(.basedOnSize)
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    if let report = viewModel.report {
+                        ShareLink(
+                            item: report.shareText,
+                            subject: Text("Graffiti Guard inspection \(report.reference)")
+                        ) {
+                            Label("Share report", systemImage: "square.and.arrow.up")
+                        }
+                        .buttonStyle(.bordered)
+                    }
+
+                    if viewModel.canReset {
+                        Button {
+                            viewModel.reset()
+                        } label: {
+                            Label("New inspection", systemImage: "plus")
+                        }
+                        .buttonStyle(.bordered)
+                        .keyboardShortcut("n", modifiers: .command)
+                    }
+
                     Button {
                         showsSettings = true
                     } label: {
                         Label("Settings", systemImage: "slider.horizontal.3")
                     }
                     .buttonStyle(.bordered)
+                    .keyboardShortcut(",", modifiers: .command)
                 }
             }
             .sheet(isPresented: $showsSettings) {
@@ -115,7 +138,7 @@ struct DetectionScreen: View {
                     .font(.system(.largeTitle, design: .rounded, weight: .black))
                     .tracking(0.8)
 
-                Text("Private, on-device graffiti detection.")
+                Text("Private field inspections, entirely on-device.")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
             }
@@ -148,6 +171,12 @@ struct DetectionScreen: View {
                 .accessibilityHint(cameraIsAvailable ? "Capture a photo" : "Camera unavailable on this device")
             }
 
+            if horizontalSizeClass == .regular {
+                Label("On iPad, you can also drop a photo directly into this panel.", systemImage: "hand.draw")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Button {
                 viewModel.loadSample()
             } label: {
@@ -158,37 +187,83 @@ struct DetectionScreen: View {
         }
         .padding(14)
         .guardCard()
+        .overlay {
+            if isDropTargeted {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(Color.guardCyan, style: StrokeStyle(lineWidth: 3, dash: [10, 6]))
+                    .padding(3)
+            }
+        }
+        .dropDestination(for: Data.self) { items, _ in
+            guard let data = items.first else { return false }
+            viewModel.loadImageData(data)
+            return true
+        } isTargeted: {
+            isDropTargeted = $0
+        }
     }
 
     private var controlCard: some View {
         VStack(alignment: .leading, spacing: 20) {
             statusSummary
 
-            Button {
-                Task {
-                    await viewModel.detect(threshold: confidenceThreshold)
-                }
-            } label: {
-                HStack {
-                    if viewModel.phase == .detecting {
-                        ProgressView()
-                            .tint(.guardInk)
-                    } else {
-                        Image(systemName: "scope")
+            if viewModel.phase == .complete, let report = viewModel.report {
+                HStack(spacing: 10) {
+                    ShareLink(
+                        item: report.shareText,
+                        subject: Text("Graffiti Guard inspection \(report.reference)")
+                    ) {
+                        Label("Share report", systemImage: "square.and.arrow.up")
+                            .frame(maxWidth: .infinity)
                     }
-                    Text(viewModel.phase == .detecting ? "Detecting" : "Detect graffiti")
-                    Spacer()
-                    if viewModel.phase != .detecting {
-                        Image(systemName: "arrow.right")
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        viewModel.reset()
+                    } label: {
+                        Label("New", systemImage: "plus")
                     }
+                    .buttonStyle(.bordered)
                 }
-                .font(.headline)
-                .padding(.horizontal, 18)
-                .frame(minHeight: 54)
-                .frame(maxWidth: .infinity)
+
+                Button {
+                    Task {
+                        await viewModel.detect(threshold: confidenceThreshold)
+                    }
+                } label: {
+                    Label("Run detection again", systemImage: "arrow.clockwise")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .keyboardShortcut(.return, modifiers: .command)
+            } else {
+                Button {
+                    Task {
+                        await viewModel.detect(threshold: confidenceThreshold)
+                    }
+                } label: {
+                    HStack {
+                        if viewModel.phase == .detecting {
+                            ProgressView()
+                                .tint(.guardInk)
+                        } else {
+                            Image(systemName: "scope")
+                        }
+                        Text(viewModel.phase == .detecting ? "Detecting" : "Detect graffiti")
+                        Spacer()
+                        if viewModel.phase != .detecting {
+                            Image(systemName: "arrow.right")
+                        }
+                    }
+                    .font(.headline)
+                    .padding(.horizontal, 18)
+                    .frame(minHeight: 54)
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(PrimaryActionButtonStyle())
+                .disabled(!viewModel.canDetect)
+                .keyboardShortcut(.return, modifiers: .command)
             }
-            .buttonStyle(PrimaryActionButtonStyle())
-            .disabled(!viewModel.canDetect)
 
             Divider()
 
@@ -197,6 +272,11 @@ struct DetectionScreen: View {
                     confidenceThreshold.formatted(.percent.precision(.fractionLength(0))) + " minimum confidence",
                     systemImage: "dial.medium"
                 )
+
+                Slider(value: $confidenceThreshold, in: 0.1...0.9, step: 0.05) {
+                    Text("Minimum confidence")
+                }
+                .tint(.guardCyan)
 
                 Label("On-device Core ML", systemImage: "cpu")
 
@@ -214,6 +294,7 @@ struct DetectionScreen: View {
             )
             .font(.caption)
             .foregroundStyle(.secondary)
+
         }
         .padding(22)
         .guardCard()
@@ -302,7 +383,7 @@ private struct ResultSummary: View {
             StatusHeader(
                 icon: foundGraffiti ? "exclamationmark.viewfinder" : "checkmark.shield.fill",
                 color: foundGraffiti ? .guardAmber : .guardGreen,
-                title: foundGraffiti ? "Graffiti detected" : "No graffiti detected",
+                title: foundGraffiti ? "Likely graffiti detected" : "No likely graffiti found",
                 message: foundGraffiti
                     ? "Review the highlighted \(report.result.count == 1 ? "region" : "regions")."
                     : "No regions passed the selected threshold."
@@ -328,6 +409,14 @@ private struct ResultSummary: View {
                     label: "model"
                 )
             }
+
+            HStack {
+                Label(report.reference, systemImage: "number")
+                Spacer()
+                Text(report.completedAt, format: .dateTime.hour().minute())
+            }
+            .font(.caption.monospacedDigit())
+            .foregroundStyle(.secondary)
         }
     }
 }

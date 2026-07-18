@@ -103,6 +103,49 @@ final class DetectionCoreTests: XCTestCase {
         XCTAssertEqual(viewModel.phase, .modelUnavailable)
         XCTAssertFalse(viewModel.canDetect)
     }
+
+    func testBuildsShareableInspectionSummary() {
+        let report = DetectionReport(
+            result: DetectionResult(
+                items: [
+                    GraffitiDetection(
+                        id: 0,
+                        confidence: 0.87,
+                        box: CGRect(x: 10, y: 20, width: 30, height: 40)
+                    )
+                ],
+                processingTimeMs: 42
+            ),
+            imageSize: CGSize(width: 640, height: 480),
+            threshold: 0.25,
+            completedAt: Date(timeIntervalSince1970: 0),
+            reference: "GG-TEST01"
+        )
+
+        XCTAssertTrue(report.shareText.contains("Reference: GG-TEST01"))
+        XCTAssertTrue(report.shareText.contains("Result: Likely graffiti detected"))
+        XCTAssertTrue(report.shareText.contains("Highest confidence: 87%"))
+        XCTAssertTrue(report.shareText.contains("Minimum confidence: 25%"))
+        XCTAssertTrue(report.shareText.contains("Human verification is required"))
+    }
+
+    @MainActor
+    func testViewModelResetClearsInspection() {
+        let viewModel = DetectionViewModel(
+            detector: StubGraffitiDetector(),
+            modelIsAvailable: true
+        )
+
+        viewModel.loadSample()
+        XCTAssertTrue(viewModel.canReset)
+
+        viewModel.reset()
+
+        XCTAssertNil(viewModel.image)
+        XCTAssertNil(viewModel.report)
+        XCTAssertEqual(viewModel.phase, .empty)
+        XCTAssertFalse(viewModel.canReset)
+    }
 }
 
 private struct StubGraffitiDetector: GraffitiDetecting {
