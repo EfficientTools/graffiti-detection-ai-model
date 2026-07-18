@@ -16,7 +16,7 @@ def test_public_detector_class_is_importable():
     assert GraffitiDetector.__name__ == "GraffitiDetector"
     assert InferenceBenchmark.__name__ == "InferenceBenchmark"
     assert benchmark_detector.__name__ == "benchmark_detector"
-    assert __version__ == "1.4.0"
+    assert __version__ == "1.5.0"
 
 
 def test_public_metrics_namespace_works():
