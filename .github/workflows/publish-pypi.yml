@@ -1,6 +1,10 @@
 name: Release
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - graffiti_detection/_version.py
   workflow_dispatch:
     inputs:
       version:
@@ -12,13 +16,15 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-${{ inputs.version }}
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   build:
     name: Validate release
     runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Check out source
@@ -34,26 +40,28 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Verify release version
+        id: version
         shell: bash
         env:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
           test "$GITHUB_REF" = "refs/heads/main" || {
-            echo "Releases must be dispatched from main" >&2
-            exit 1
-          }
-          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
-            echo "Version must use MAJOR.MINOR.PATCH format" >&2
+            echo "Releases must run from main" >&2
             exit 1
           }
           package_version=$(python -c 'import runpy; print(runpy.run_path("graffiti_detection/_version.py")["__version__"])')
-          test "$RELEASE_VERSION" = "$package_version" || {
-            echo "Requested $RELEASE_VERSION does not match package $package_version" >&2
+          requested_version=${RELEASE_VERSION:-$package_version}
+          [[ "$requested_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "Version must use MAJOR.MINOR.PATCH format" >&2
             exit 1
           }
-          if git rev-parse "v$RELEASE_VERSION" >/dev/null 2>&1; then
-            test "$(git rev-list -n 1 "v$RELEASE_VERSION")" = "$GITHUB_SHA" || {
-              echo "Tag v$RELEASE_VERSION points to another commit" >&2
+          test "$requested_version" = "$package_version" || {
+            echo "Requested $requested_version does not match package $package_version" >&2
+            exit 1
+          }
+          if git rev-parse "v$requested_version" >/dev/null 2>&1; then
+            test "$(git rev-list -n 1 "v$requested_version")" = "$GITHUB_SHA" || {
+              echo "Tag v$requested_version points to another commit" >&2
               exit 1
             }
           fi
@@ -61,6 +69,7 @@ jobs:
             echo "Release commit is not on origin/main" >&2
             exit 1
           }
+          echo "version=$requested_version" >> "$GITHUB_OUTPUT"
 
       - name: Install release dependencies
         run: |
@@ -110,7 +119,7 @@ jobs:
 
   github-release:
     name: Publish GitHub release
-    needs: publish
+    needs: [build, publish]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -125,7 +134,7 @@ jobs:
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: v${{ inputs.version }}
+          RELEASE_TAG: v${{ needs.build.outputs.version }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" dist/* --clobber
