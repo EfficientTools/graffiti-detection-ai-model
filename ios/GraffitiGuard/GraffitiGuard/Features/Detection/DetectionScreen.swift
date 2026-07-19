@@ -96,17 +96,20 @@ struct DetectionScreen: View {
                 titleVisibility: .visible
             ) {
                 Button("Choose Photo") {
+                    viewModel.cancelDetection()
                     showsPhotoLibrary = true
                 }
                 .keyboardShortcut(.defaultAction)
 
                 if cameraIsAvailable {
                     Button("Take Photo") {
+                        viewModel.cancelDetection()
                         showsCamera = true
                     }
                 }
 
                 Button("Choose File") {
+                    viewModel.cancelDetection()
                     showsFileImporter = true
                 }
 
@@ -129,7 +132,7 @@ struct DetectionScreen: View {
                 CameraPicker { image in
                     Task {
                         await prepareImage {
-                            viewModel.select(image)
+                            await viewModel.select(image)
                         }
                     }
                 }
@@ -138,6 +141,7 @@ struct DetectionScreen: View {
             .onChange(of: selectedPhoto) { _, item in
                 guard let item else { return }
                 Task {
+                    viewModel.cancelDetection()
                     isLoadingImage = true
                     defer {
                         isLoadingImage = false
@@ -177,12 +181,14 @@ struct DetectionScreen: View {
                 else { return }
 
                 didLoadStorePreview = true
-                viewModel.loadSample()
+                await viewModel.loadSample()
                 guard arguments.contains("-screenshotMode") else { return }
                 await viewModel.detect(threshold: confidenceThreshold)
             }
         }
         .tint(.guardGreen)
+        .sensoryFeedback(.success, trigger: viewModel.report?.reference)
+        .sensoryFeedback(.error, trigger: viewModel.errorMessage)
     }
 
     private var header: some View {
@@ -229,29 +235,33 @@ struct DetectionScreen: View {
 
             HStack(spacing: 12) {
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                    HStack(spacing: 8) {
-                        if imageIsLoading {
-                            ProgressView()
-                                .controlSize(.small)
-                            Text("Loading")
-                        } else {
-                            Label("Photo", systemImage: "photo.on.rectangle")
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
+                    SourceActionLabel(
+                        title: imageIsLoading ? "Loading" : "Photo",
+                        systemImage: "photo.on.rectangle",
+                        showsProgress: imageIsLoading
+                    )
                 }
                 .buttonStyle(SourceButtonStyle())
                 .disabled(isLoadingImage)
 
                 Button {
+                    viewModel.cancelDetection()
                     showsCamera = true
                 } label: {
-                    Label("Camera", systemImage: "camera.fill")
-                        .frame(maxWidth: .infinity)
+                    SourceActionLabel(title: "Camera", systemImage: "camera.fill")
                 }
                 .buttonStyle(SourceButtonStyle())
                 .disabled(!cameraIsAvailable || isLoadingImage)
                 .accessibilityHint(cameraIsAvailable ? "Capture a photo" : "Camera unavailable on this device")
+
+                Button {
+                    viewModel.cancelDetection()
+                    showsFileImporter = true
+                } label: {
+                    SourceActionLabel(title: "File", systemImage: "folder.fill")
+                }
+                .buttonStyle(SourceButtonStyle())
+                .disabled(isLoadingImage)
             }
 
             if horizontalSizeClass == .regular {
@@ -263,7 +273,7 @@ struct DetectionScreen: View {
             Button {
                 Task {
                     await prepareImage {
-                        viewModel.loadSample()
+                        await viewModel.loadSample()
                     }
                 }
             } label: {
@@ -299,6 +309,7 @@ struct DetectionScreen: View {
         guard !isLoadingImage else { return }
 
         Task {
+            viewModel.cancelDetection()
             isLoadingImage = true
             defer { isLoadingImage = false }
 
@@ -310,6 +321,8 @@ struct DetectionScreen: View {
                 if selected {
                     await detectAutomaticallyIfNeeded()
                 }
+            } catch let error as CocoaError where error.code == .userCancelled {
+                return
             } catch {
                 viewModel.showError("The selected image file could not be loaded: \(error.localizedDescription)")
             }
@@ -319,6 +332,7 @@ struct DetectionScreen: View {
     @MainActor
     private func prepareImage(_ selection: @MainActor () async -> Bool) async {
         guard !isLoadingImage else { return }
+        viewModel.cancelDetection()
         isLoadingImage = true
         await Task.yield()
         let selected = await selection()
@@ -367,6 +381,15 @@ struct DetectionScreen: View {
                 }
                 .buttonStyle(.bordered)
                 .keyboardShortcut(.return, modifiers: .command)
+
+                if abs(report.threshold - confidenceThreshold) > 0.001 {
+                    Label(
+                        "Threshold changed. Run detection again to refresh this result.",
+                        systemImage: "arrow.clockwise.circle"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
             } else {
                 Button {
                     Task {
@@ -434,6 +457,14 @@ struct DetectionScreen: View {
     @ViewBuilder
     private var statusSummary: some View {
         switch viewModel.phase {
+        case .preparingModel:
+            StatusHeader(
+                icon: "cpu",
+                color: .guardCyan,
+                title: "Preparing on-device detection",
+                message: "Getting the private Core ML model ready.",
+                showsProgress: true
+            )
         case .empty:
             StatusHeader(
                 icon: "viewfinder",
@@ -446,7 +477,7 @@ struct DetectionScreen: View {
                 icon: "square.stack.3d.up.slash.fill",
                 color: .guardAmber,
                 title: "Model required",
-                message: "Bundle a trained GraffitiDetector model to enable offline detection."
+                message: "On-device detection is unavailable. Reinstall the app and try again."
             )
         case .ready:
             StatusHeader(
@@ -526,12 +557,19 @@ private struct StatusHeader: View {
     let color: Color
     let title: String
     let message: String
+    var showsProgress = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Image(systemName: icon)
-                .font(.title2.weight(.bold))
-                .foregroundStyle(color)
+            if showsProgress {
+                ProgressView()
+                    .controlSize(.regular)
+                    .tint(color)
+            } else {
+                Image(systemName: icon)
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(color)
+            }
 
             Text(title)
                 .font(.title3.weight(.bold))
@@ -641,6 +679,44 @@ private struct SourceButtonStyle: ButtonStyle {
             .background(Color.primary.opacity(configuration.isPressed ? 0.11 : 0.06))
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .opacity(isEnabled ? (configuration.isPressed ? 0.78 : 1) : 0.35)
+    }
+}
+
+private struct SourceActionLabel: View {
+    let title: String
+    let systemImage: String
+    var showsProgress = false
+
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    var body: some View {
+        Group {
+            if horizontalSizeClass == .compact {
+                VStack(spacing: 4) {
+                    sourceIcon
+                    Text(title)
+                        .lineLimit(1)
+                }
+            } else {
+                HStack(spacing: 8) {
+                    sourceIcon
+                    Text(title)
+                        .lineLimit(1)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var sourceIcon: some View {
+        if showsProgress {
+            ProgressView()
+                .controlSize(.small)
+        } else {
+            Image(systemName: systemImage)
+        }
     }
 }
 

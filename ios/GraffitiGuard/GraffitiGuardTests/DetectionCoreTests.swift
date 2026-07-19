@@ -105,6 +105,20 @@ final class DetectionCoreTests: XCTestCase {
         XCTAssertFalse(viewModel.canDetect)
     }
 
+    @MainActor
+    func testViewModelShowsModelPreparationAtLaunch() async {
+        let viewModel = DetectionViewModel(
+            detector: StubGraffitiDetector(),
+            modelIsAvailable: true
+        )
+
+        XCTAssertEqual(viewModel.phase, .preparingModel)
+
+        await viewModel.prepareModel()
+
+        XCTAssertEqual(viewModel.phase, .empty)
+    }
+
     func testBuildsShareableInspectionSummary() {
         let report = DetectionReport(
             result: DetectionResult(
@@ -158,13 +172,13 @@ final class DetectionCoreTests: XCTestCase {
     }
 
     @MainActor
-    func testViewModelResetClearsInspection() {
+    func testViewModelResetClearsInspection() async {
         let viewModel = DetectionViewModel(
             detector: StubGraffitiDetector(),
             modelIsAvailable: true
         )
 
-        viewModel.loadSample()
+        await viewModel.loadSample()
         XCTAssertTrue(viewModel.canReset)
 
         viewModel.reset()
@@ -173,6 +187,28 @@ final class DetectionCoreTests: XCTestCase {
         XCTAssertNil(viewModel.report)
         XCTAssertEqual(viewModel.phase, .empty)
         XCTAssertFalse(viewModel.canReset)
+    }
+
+    @MainActor
+    func testViewModelResetCancelsInFlightDetection() async {
+        let viewModel = DetectionViewModel(
+            detector: SlowGraffitiDetector(),
+            modelIsAvailable: true
+        )
+        await viewModel.loadSample()
+
+        let detection = Task {
+            await viewModel.detect(threshold: 0.25)
+        }
+        await Task.yield()
+        XCTAssertEqual(viewModel.phase, .detecting)
+
+        viewModel.reset()
+        await detection.value
+
+        XCTAssertEqual(viewModel.phase, .empty)
+        XCTAssertNil(viewModel.image)
+        XCTAssertNil(viewModel.report)
     }
 
     @MainActor
@@ -197,7 +233,8 @@ final class DetectionCoreTests: XCTestCase {
         XCTAssertTrue(OnDeviceGraffitiDetector.isModelBundled)
 
         let image = try XCTUnwrap(UIImage(named: "DemoStreet"))
-        let prepared = try XCTUnwrap(ImagePreparer.prepare(image))
+        let preparedImage = await ImagePreparer.prepare(image)
+        let prepared = try XCTUnwrap(preparedImage)
         let detector = OnDeviceGraffitiDetector()
 
         let clock = ContinuousClock()
@@ -264,7 +301,8 @@ final class DetectionCoreTests: XCTestCase {
             UIColor(white: 0.82, alpha: 1).setFill()
             context.fill(CGRect(x: 0, y: 0, width: 1_280, height: 720))
         }
-        let prepared = try XCTUnwrap(ImagePreparer.prepare(image))
+        let preparedImage = await ImagePreparer.prepare(image)
+        let prepared = try XCTUnwrap(preparedImage)
         let result = try await OnDeviceGraffitiDetector().detect(
             image: prepared.cgImage,
             threshold: 0.25
@@ -277,5 +315,12 @@ final class DetectionCoreTests: XCTestCase {
 private struct StubGraffitiDetector: GraffitiDetecting {
     func detect(image: CGImage, threshold: Double) async throws -> DetectionResult {
         DetectionResult(items: [], processingTimeMs: 0)
+    }
+}
+
+private struct SlowGraffitiDetector: GraffitiDetecting {
+    func detect(image: CGImage, threshold: Double) async throws -> DetectionResult {
+        try await Task.sleep(for: .seconds(30))
+        return DetectionResult(items: [], processingTimeMs: 30_000)
     }
 }

@@ -96,7 +96,7 @@ enum DetectionError: LocalizedError, Equatable, Sendable {
         case .invalidImage:
             "The selected image could not be prepared for detection."
         case .modelUnavailable:
-            "Add GraffitiDetector.mlpackage to the app before running detection."
+            "On-device detection is unavailable. Reinstall the app and try again."
         case .incompatibleModel:
             "The bundled model does not match the Graffiti Guard Core ML contract."
         case .modelLoadFailed:

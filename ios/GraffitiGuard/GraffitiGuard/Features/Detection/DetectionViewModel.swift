@@ -4,6 +4,7 @@ import UIKit
 @MainActor
 final class DetectionViewModel: ObservableObject {
     enum Phase: Equatable {
+        case preparingModel
         case empty
         case modelUnavailable
         case ready
@@ -22,6 +23,8 @@ final class DetectionViewModel: ObservableObject {
     private let detector: any GraffitiDetecting
     private var cgImage: CGImage?
     private var selectionID = UUID()
+    private var detectionTask: Task<DetectionResult, any Error>?
+    private var activeDetectionID: UUID?
 
     init(
         detector: any GraffitiDetecting = OnDeviceGraffitiDetector(),
@@ -29,7 +32,7 @@ final class DetectionViewModel: ObservableObject {
     ) {
         self.detector = detector
         self.modelIsAvailable = modelIsAvailable
-        phase = modelIsAvailable ? .empty : .modelUnavailable
+        phase = modelIsAvailable ? .preparingModel : .modelUnavailable
     }
 
     var canDetect: Bool {
@@ -45,6 +48,9 @@ final class DetectionViewModel: ObservableObject {
 
         do {
             try await detector.prepare()
+            if phase == .preparingModel {
+                phase = image == nil ? .empty : .ready
+            }
         } catch is CancellationError {
             return
         } catch {
@@ -63,17 +69,17 @@ final class DetectionViewModel: ObservableObject {
     }
 
     @discardableResult
-    func loadSample() -> Bool {
+    func loadSample() async -> Bool {
         guard let image = UIImage(named: "DemoStreet") else {
             showError("The sample scene could not be loaded.")
             return false
         }
-        return select(image)
+        return await select(image)
     }
 
     @discardableResult
-    func select(_ image: UIImage) -> Bool {
-        guard let prepared = ImagePreparer.prepare(image) else {
+    func select(_ image: UIImage) async -> Bool {
+        guard let prepared = await ImagePreparer.prepare(image) else {
             showError(DetectionError.invalidImage.localizedDescription)
             return false
         }
@@ -83,6 +89,7 @@ final class DetectionViewModel: ObservableObject {
     }
 
     private func apply(_ prepared: PreparedImage) {
+        cancelDetection()
         selectionID = UUID()
         self.image = prepared.image
         cgImage = prepared.cgImage
@@ -92,6 +99,7 @@ final class DetectionViewModel: ObservableObject {
     }
 
     func reset() {
+        cancelDetection()
         selectionID = UUID()
         image = nil
         cgImage = nil
@@ -111,12 +119,21 @@ final class DetectionViewModel: ObservableObject {
         }
 
         let activeSelection = selectionID
+        let detectionID = UUID()
         phase = .detecting
         errorMessage = nil
+        activeDetectionID = detectionID
+
+        detectionTask?.cancel()
+        let detector = detector
+        let task = Task {
+            try await detector.detect(image: cgImage, threshold: threshold)
+        }
+        detectionTask = task
 
         do {
-            let result = try await detector.detect(image: cgImage, threshold: threshold)
-            guard activeSelection == selectionID else { return }
+            let result = try await task.value
+            guard activeSelection == selectionID, activeDetectionID == detectionID else { return }
 
             report = DetectionReport(
                 result: result,
@@ -124,12 +141,33 @@ final class DetectionViewModel: ObservableObject {
                 threshold: threshold
             )
             phase = .complete
+            detectionTask = nil
+            activeDetectionID = nil
         } catch is CancellationError {
-            guard activeSelection == selectionID else { return }
+            guard activeSelection == selectionID, activeDetectionID == detectionID else { return }
             phase = modelIsAvailable ? .ready : .modelUnavailable
+            detectionTask = nil
+            activeDetectionID = nil
         } catch {
-            guard activeSelection == selectionID else { return }
+            guard activeSelection == selectionID, activeDetectionID == detectionID else { return }
+            detectionTask = nil
+            activeDetectionID = nil
             showError(error.localizedDescription)
+        }
+    }
+
+    func cancelDetection() {
+        activeDetectionID = nil
+        detectionTask?.cancel()
+        detectionTask = nil
+
+        guard phase == .detecting else { return }
+        if report != nil {
+            phase = .complete
+        } else if image != nil {
+            phase = .ready
+        } else {
+            phase = modelIsAvailable ? .empty : .modelUnavailable
         }
     }
 
