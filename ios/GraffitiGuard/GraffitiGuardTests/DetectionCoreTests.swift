@@ -1,4 +1,4 @@
-import CoreML
+@preconcurrency import CoreML
 import Foundation
 import UIKit
 import XCTest
@@ -229,17 +229,46 @@ final class DetectionCoreTests: XCTestCase {
     }
 
     @MainActor
+    func testNormalizesCameraImageOrientationBeforeDetection() async throws {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let landscape = UIGraphicsImageRenderer(
+            size: CGSize(width: 120, height: 60),
+            format: format
+        ).image { context in
+            UIColor.systemGreen.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 120, height: 60))
+        }
+        let cgImage = try XCTUnwrap(landscape.cgImage)
+        let portrait = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
+
+        let decoded = await ImagePreparer.prepare(portrait)
+        let prepared = try XCTUnwrap(decoded)
+
+        XCTAssertEqual(prepared.image.imageOrientation, .up)
+        XCTAssertEqual(prepared.image.size, CGSize(width: 60, height: 120))
+        XCTAssertEqual(prepared.cgImage.width, 60)
+        XCTAssertEqual(prepared.cgImage.height, 120)
+    }
+
+    @MainActor
     func testBundledModelDetectsSampleScene() async throws {
         XCTAssertTrue(OnDeviceGraffitiDetector.isModelBundled)
 
         let image = try XCTUnwrap(UIImage(named: "DemoStreet"))
         let preparedImage = await ImagePreparer.prepare(image)
         let prepared = try XCTUnwrap(preparedImage)
-        let detector = OnDeviceGraffitiDetector()
+        let loadCounter = ModelLoadCounter()
+        let detector = OnDeviceGraffitiDetector { url, configuration in
+            loadCounter.increment()
+            return try await MLModel.load(contentsOf: url, configuration: configuration)
+        }
 
         let clock = ContinuousClock()
         let preparationStartedAt = clock.now
-        try await detector.prepare()
+        async let firstPreparation: Void = detector.prepare()
+        async let secondPreparation: Void = detector.prepare()
+        _ = try await (firstPreparation, secondPreparation)
         let preparationDuration = preparationStartedAt.duration(to: clock.now)
         let preparationMs =
             Double(preparationDuration.components.seconds) * 1_000
@@ -268,6 +297,7 @@ final class DetectionCoreTests: XCTestCase {
         XCTAssertFalse(result.items.isEmpty)
         XCTAssertFalse(warmedResult.items.isEmpty)
         XCTAssertFalse(compressedResult.items.isEmpty)
+        XCTAssertEqual(loadCounter.count, 1)
         XCTAssertGreaterThan(preparationMs, 0)
         XCTAssertLessThan(preparationMs, 10_000)
         XCTAssertTrue(result.processingTimeMs.isFinite)
@@ -292,6 +322,25 @@ final class DetectionCoreTests: XCTestCase {
                 + "\(result.processingTimeMs.formatted(.number.precision(.fractionLength(1)))) ms first, "
                 + "\(warmedResult.processingTimeMs.formatted(.number.precision(.fractionLength(1)))) ms repeat"
         )
+    }
+
+    func testRetriesModelPreparationAfterLoadFailure() async {
+        let loadCounter = ModelLoadCounter()
+        let detector = OnDeviceGraffitiDetector { _, _ in
+            loadCounter.increment()
+            throw TestModelLoadError.failed
+        }
+
+        for _ in 0..<2 {
+            do {
+                try await detector.prepare()
+                XCTFail("Expected model preparation to fail")
+            } catch {
+                XCTAssertEqual(error as? DetectionError, .modelLoadFailed)
+            }
+        }
+
+        XCTAssertEqual(loadCounter.count, 2)
     }
 
     @MainActor
@@ -323,4 +372,25 @@ private struct SlowGraffitiDetector: GraffitiDetecting {
         try await Task.sleep(for: .seconds(30))
         return DetectionResult(items: [], processingTimeMs: 30_000)
     }
+}
+
+private final class ModelLoadCounter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value = 0
+
+    var count: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return value
+    }
+
+    func increment() {
+        lock.lock()
+        value += 1
+        lock.unlock()
+    }
+}
+
+private enum TestModelLoadError: Error {
+    case failed
 }

@@ -15,17 +15,27 @@ extension GraffitiDetecting {
 
 actor OnDeviceGraffitiDetector: GraffitiDetecting {
     static let modelResourceName = "GraffitiDetector"
+    typealias ModelLoader = @Sendable (URL, MLModelConfiguration) async throws -> MLModel
 
     private let modelURL: URL?
+    private let modelLoader: ModelLoader
     private let imageContext = CIContext(options: [.cacheIntermediates: false])
     private var model: MLModel?
+    private var modelLoadTask: Task<MLModel, any Error>?
+    private var modelLoadID: UUID?
     private var inputBuffer: CVPixelBuffer?
     private var inputBufferSize: CGSize = .zero
     private var predictionInFlight = false
     private var predictionWaiters: [CheckedContinuation<Void, Never>] = []
 
-    init(bundle: Bundle = .main) {
+    init(
+        bundle: Bundle = .main,
+        modelLoader: @escaping ModelLoader = { url, configuration in
+            try await MLModel.load(contentsOf: url, configuration: configuration)
+        }
+    ) {
         modelURL = Self.modelURL(in: bundle)
+        self.modelLoader = modelLoader
     }
 
     static var isModelBundled: Bool {
@@ -115,6 +125,9 @@ actor OnDeviceGraffitiDetector: GraffitiDetecting {
         if let model {
             return model
         }
+        if let modelLoadTask, let modelLoadID {
+            return try await resolveModelLoad(modelLoadTask, id: modelLoadID)
+        }
         guard let modelURL else {
             throw DetectionError.modelUnavailable
         }
@@ -126,15 +139,39 @@ actor OnDeviceGraffitiDetector: GraffitiDetecting {
             configuration.computeUnits = .all
         #endif
 
+        let modelLoader = modelLoader
+        let task = Task {
+            try await modelLoader(modelURL, configuration)
+        }
+        let loadID = UUID()
+        modelLoadTask = task
+        modelLoadID = loadID
+        return try await resolveModelLoad(task, id: loadID)
+    }
+
+    private func resolveModelLoad(
+        _ task: Task<MLModel, any Error>,
+        id: UUID
+    ) async throws -> MLModel {
         do {
-            let loadedModel = try await MLModel.load(contentsOf: modelURL, configuration: configuration)
+            let loadedModel = try await task.value
             model = loadedModel
+            clearModelLoad(id: id)
+            try Task.checkCancellation()
             return loadedModel
         } catch is CancellationError {
+            clearModelLoad(id: id)
             throw CancellationError()
         } catch {
+            clearModelLoad(id: id)
             throw DetectionError.modelLoadFailed
         }
+    }
+
+    private func clearModelLoad(id: UUID) {
+        guard modelLoadID == id else { return }
+        modelLoadTask = nil
+        modelLoadID = nil
     }
 
     private func makeInput(for image: CGImage, model: MLModel) throws -> CoreMLModelInput {
