@@ -68,29 +68,35 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             clean build
 
-      - name: Select test simulator
+      - name: Select test simulators
         shell: bash
         run: |
-          device_id=$(xcrun simctl list devices available --json | python3 -c '
+          read -r iphone_id ipad_id < <(xcrun simctl list devices available --json | python3 -c '
           import json, sys
           devices = json.load(sys.stdin)["devices"]
-          print(next(
-              device["udid"]
+          available = [
+              device
               for runtime in devices.values()
               for device in runtime
-              if device.get("isAvailable") and device["name"].startswith("iPhone")
-          ))
+              if device.get("isAvailable")
+          ]
+          iphone = next(device["udid"] for device in available if device["name"].startswith("iPhone"))
+          ipad = next(device["udid"] for device in available if device["name"].startswith("iPad"))
+          print(iphone, ipad)
           ')
-          test -n "$device_id"
-          echo "TEST_DEVICE_ID=$device_id" >> "$GITHUB_ENV"
+          test -n "$iphone_id"
+          test -n "$ipad_id"
+          echo "IPHONE_TEST_DEVICE_ID=$iphone_id" >> "$GITHUB_ENV"
+          echo "IPAD_TEST_DEVICE_ID=$ipad_id" >> "$GITHUB_ENV"
 
-      - name: Run unit tests
+      - name: Run iPhone and iPad tests
         run: |
           xcodebuild \
             -project ios/GraffitiGuard/GraffitiGuard.xcodeproj \
             -scheme GraffitiGuard \
             -configuration Debug \
-            -destination "platform=iOS Simulator,id=$TEST_DEVICE_ID" \
+            -destination "platform=iOS Simulator,id=$IPHONE_TEST_DEVICE_ID" \
+            -destination "platform=iOS Simulator,id=$IPAD_TEST_DEVICE_ID" \
             -derivedDataPath /tmp/GraffitiGuardTestDerivedData \
             -resultBundlePath /tmp/GraffitiGuardTests.xcresult \
             -enableCodeCoverage YES \
