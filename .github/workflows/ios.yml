@@ -28,7 +28,7 @@ jobs:
   build-and-test:
     name: Build and test iPhone and iPad app
     runs-on: macos-26
-    timeout-minutes: 25
+    timeout-minutes: 35
 
     steps:
       - name: Check out source
@@ -44,7 +44,8 @@ jobs:
             --recursive \
             --configuration ios/GraffitiGuard/.swift-format \
             ios/GraffitiGuard/GraffitiGuard \
-            ios/GraffitiGuard/GraffitiGuardTests
+            ios/GraffitiGuard/GraffitiGuardTests \
+            ios/GraffitiGuard/GraffitiGuardUITests
 
       - name: Build universal simulator app
         run: |
