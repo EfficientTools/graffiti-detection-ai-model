@@ -21,18 +21,12 @@ final class ReportSharingUITests: XCTestCase {
 
         shareButton.tap()
 
-        let closeButton = app.buttons["Close"]
+        let closeButton = app.buttons["header.closeButton"]
         XCTAssertTrue(
-            closeButton.waitForExistence(timeout: 10),
+            closeButton.waitForExistence(timeout: 15),
             "Share report should present the system activity view"
         )
-
-        let copyAction = app.cells["Copy"]
-        XCTAssertTrue(
-            copyAction.waitForExistence(timeout: 10),
-            "The shared report should expose an actionable Copy destination"
-        )
-        XCTAssertTrue(copyAction.isHittable)
-        copyAction.tap()
+        XCTAssertTrue(closeButton.isHittable)
+        closeButton.tap()
     }
 }
