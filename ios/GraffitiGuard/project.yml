@@ -54,6 +54,7 @@ targets:
     scheme:
       testTargets:
         - GraffitiGuardTests
+        - GraffitiGuardUITests
 
   GraffitiGuardTests:
     type: bundle.unit-test
@@ -66,3 +67,16 @@ targets:
       base:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: dev.pierrehenry.GraffitiGuardTests
+
+  GraffitiGuardUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - GraffitiGuardUITests
+    dependencies:
+      - target: GraffitiGuard
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: dev.pierrehenry.GraffitiGuardUITests
+        TEST_TARGET_NAME: GraffitiGuard

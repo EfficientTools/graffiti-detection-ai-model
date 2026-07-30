@@ -50,6 +50,17 @@
                ReferencedContainer = "container:GraffitiGuard.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A83C01761B920ED9EEEF1395"
+               BuildableName = "GraffitiGuardUITests.xctest"
+               BlueprintName = "GraffitiGuardUITests"
+               ReferencedContainer = "container:GraffitiGuard.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

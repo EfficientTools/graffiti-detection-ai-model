@@ -14,6 +14,7 @@ struct DetectionScreen: View {
     @State private var showsFileImporter = false
     @State private var showsCamera = false
     @State private var showsSettings = false
+    @State private var sharePayload: ReportSharePayload?
     @State private var didLoadStorePreview = false
     @State private var isDropTargeted = false
     @State private var isLoadingImage = false
@@ -56,14 +57,15 @@ struct DetectionScreen: View {
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if let report = viewModel.report {
-                        ShareLink(
-                            item: report.shareText,
-                            subject: Text("Graffiti Guard inspection \(report.reference)")
-                        ) {
+                        Button {
+                            sharePayload = ReportSharePayload(report: report)
+                        } label: {
                             Label("Share report", systemImage: "square.and.arrow.up")
                         }
                         .buttonStyle(.bordered)
                         .disabled(isLoadingImage)
+                        .accessibilityIdentifier("share-report-button")
+                        .accessibilityHint("Opens the system sharing options for this report")
                     }
 
                     if viewModel.canReset {
@@ -89,6 +91,10 @@ struct DetectionScreen: View {
             .sheet(isPresented: $showsSettings) {
                 SettingsView()
                     .presentationDetents([.medium, .large])
+            }
+            .sheet(item: $sharePayload) { payload in
+                ReportActivityView(payload: payload)
+                    .ignoresSafeArea()
             }
             .confirmationDialog(
                 "Choose a street image",
@@ -354,14 +360,15 @@ struct DetectionScreen: View {
 
             if viewModel.phase == .complete, let report = viewModel.report {
                 HStack(spacing: 10) {
-                    ShareLink(
-                        item: report.shareText,
-                        subject: Text("Graffiti Guard inspection \(report.reference)")
-                    ) {
+                    Button {
+                        sharePayload = ReportSharePayload(report: report)
+                    } label: {
                         Label("Share report", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("share-report-button")
+                    .accessibilityHint("Opens the system sharing options for this report")
 
                     Button {
                         viewModel.reset()

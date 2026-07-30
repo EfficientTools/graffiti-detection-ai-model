@@ -145,6 +145,20 @@ final class DetectionCoreTests: XCTestCase {
         XCTAssertTrue(report.shareText.contains("Human verification is required"))
     }
 
+    func testBuildsSystemSharePayload() {
+        let report = DetectionReport(
+            result: DetectionResult(items: [], processingTimeMs: 12),
+            imageSize: CGSize(width: 640, height: 480),
+            threshold: 0.25,
+            reference: "GG-SHARE"
+        )
+
+        let payload = ReportSharePayload(report: report)
+
+        XCTAssertEqual(payload.subject, "Graffiti Guard inspection GG-SHARE")
+        XCTAssertEqual(payload.text, report.shareText)
+    }
+
     func testReportRecommendsManualReviewForEmptyResult() {
         let report = DetectionReport(
             result: DetectionResult(items: [], processingTimeMs: 12),
