@@ -98,6 +98,7 @@ jobs:
             -configuration Debug \
             -destination "platform=iOS Simulator,id=$IPHONE_TEST_DEVICE_ID" \
             -destination "platform=iOS Simulator,id=$IPAD_TEST_DEVICE_ID" \
+            -maximum-concurrent-test-simulator-destinations 1 \
             -derivedDataPath /tmp/GraffitiGuardTestDerivedData \
             -resultBundlePath /tmp/GraffitiGuardTests.xcresult \
             -enableCodeCoverage YES \
