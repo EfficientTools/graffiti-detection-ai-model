@@ -7,6 +7,7 @@ Maintains detailed logs of all detection events with metadata
 import csv
 import json
 import sqlite3
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -314,7 +315,16 @@ class IncidentLogger:
             start_date=f"{date}T00:00:00", end_date=f"{date}T23:59:59.999999"
         )
 
-        stats = self.get_statistics("today")
+        confidence_values = [incident["confidence"] for incident in incidents]
+        stats = {
+            "total_incidents": len(incidents),
+            "by_status": Counter(incident["status"] for incident in incidents),
+            "by_camera": Counter(incident["camera_id"] for incident in incidents),
+            "avg_confidence": (
+                sum(confidence_values) / len(confidence_values) if confidence_values else 0.0
+            ),
+            "high_confidence_count": sum(confidence >= 0.7 for confidence in confidence_values),
+        }
 
         report = f"""
 ╔════════════════════════════════════════════════════════════════╗

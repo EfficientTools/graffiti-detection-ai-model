@@ -126,6 +126,15 @@ class TestIncidentLogger(unittest.TestCase):
         self.assertIn("SUMMARY", report)
         self.assertIn("camera_1", report)
 
+    def test_daily_report_uses_requested_date(self):
+        """A historical report must not include today's statistics."""
+        self.logger.log_incident(camera_id="camera_1", confidence=0.85, detections=1)
+
+        report = self.logger.generate_daily_report(date="1999-01-01")
+
+        self.assertIn("Total Incidents: 0", report)
+        self.assertNotIn("camera_1", report)
+
 
 class TestIncidentLoggerEdgeCases(unittest.TestCase):
     """Test edge cases in incident logger"""
