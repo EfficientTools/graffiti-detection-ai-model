@@ -34,6 +34,7 @@ struct DetectionCanvas: View {
                             .frame(width: geometry.size.width, height: geometry.size.height)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("choose-image-button")
                     .accessibilityLabel("Choose a street image")
                     .accessibilityHint("Choose a photo or file, or take a photo")
                 }
