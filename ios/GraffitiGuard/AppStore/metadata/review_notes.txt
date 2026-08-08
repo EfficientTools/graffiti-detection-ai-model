@@ -1,9 +1,8 @@
 No sign-in or demo account is required.
 
-Build 7 resolves the reported iPad Share Report issue. Share Report now presents an
-explicit system activity view from a stable screen-level sheet instead of relying on
-an inferred popover anchor. The corrected flow was clean-install tested on iPad Air
-11-inch and iPhone simulators.
+Version 1.1 build 8 keeps the stable system Share Report flow introduced in build 7
+and adds the inspected image to the referenced text summary. The complete flow was
+clean-install tested on current iPad Air 11-inch and iPhone simulators.
 
 To test without granting Photos or Camera access:
 1. Tap "Try sample scene."

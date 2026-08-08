@@ -1,0 +1,1 @@
+Inspection reports now share the reviewed image with the referenced text summary. This release also improves iPad workflow coverage and reliability on current iOS and iPadOS versions.
