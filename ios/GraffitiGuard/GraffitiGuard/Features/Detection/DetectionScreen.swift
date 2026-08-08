@@ -56,9 +56,9 @@ struct DetectionScreen: View {
             }
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    if let report = viewModel.report {
+                    if let report = viewModel.report, let image = viewModel.image {
                         Button {
-                            sharePayload = ReportSharePayload(report: report)
+                            sharePayload = ReportSharePayload(report: report, image: image)
                         } label: {
                             Label("Share report", systemImage: "square.and.arrow.up")
                         }
@@ -358,10 +358,12 @@ struct DetectionScreen: View {
         VStack(alignment: .leading, spacing: 20) {
             statusSummary
 
-            if viewModel.phase == .complete, let report = viewModel.report {
+            if viewModel.phase == .complete, let report = viewModel.report,
+                let image = viewModel.image
+            {
                 HStack(spacing: 10) {
                     Button {
-                        sharePayload = ReportSharePayload(report: report)
+                        sharePayload = ReportSharePayload(report: report, image: image)
                     } label: {
                         Label("Share report", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)

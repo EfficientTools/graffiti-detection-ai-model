@@ -1,14 +1,17 @@
 import SwiftUI
 import UIKit
 
-struct ReportSharePayload: Identifiable, Equatable {
+struct ReportSharePayload: Identifiable {
     let id = UUID()
     let subject: String
     let text: String
+    let image: UIImage
 
-    init(report: DetectionReport) {
+    @MainActor
+    init(report: DetectionReport, image: UIImage) {
         subject = "Graffiti Guard inspection \(report.reference)"
         text = report.shareText
+        self.image = ReportImageRenderer.render(image: image, report: report)
     }
 }
 
@@ -18,7 +21,7 @@ struct ReportActivityView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIActivityViewController {
         let itemSource = ReportActivityItemSource(payload: payload)
         let controller = UIActivityViewController(
-            activityItems: [itemSource],
+            activityItems: [itemSource, payload.image],
             applicationActivities: nil
         )
         return controller
