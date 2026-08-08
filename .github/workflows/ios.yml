@@ -73,17 +73,32 @@ jobs:
         shell: bash
         run: |
           read -r iphone_id ipad_id < <(xcrun simctl list devices available --json | python3 -c '
-          import json, sys
+          import json, re, sys
           devices = json.load(sys.stdin)["devices"]
           available = [
-              device
-              for runtime in devices.values()
-              for device in runtime
+              (tuple(map(int, re.search(r"iOS-(\d+)-(\d+)", runtime).groups())), device)
+              for runtime, runtime_devices in devices.items()
+              if re.search(r"iOS-(\d+)-(\d+)", runtime)
+              for device in runtime_devices
               if device.get("isAvailable")
           ]
-          iphone = next(device["udid"] for device in available if device["name"].startswith("iPhone"))
-          ipad = next(device["udid"] for device in available if device["name"].startswith("iPad"))
-          print(iphone, ipad)
+          latest_runtime = max(version for version, _ in available)
+          current = [device for version, device in available if version == latest_runtime]
+          iphone = next(
+              (device for device in current if device["name"] == "iPhone 17 Pro"),
+              next(device for device in current if device["name"].startswith("iPhone")),
+          )
+          ipad = next(
+              (device for device in current if device["name"].startswith("iPad Air 11-inch")),
+              next(device for device in current if device["name"].startswith("iPad")),
+          )
+          print(
+              "Selected iOS {}.{}: {} and {}".format(
+                  latest_runtime[0], latest_runtime[1], iphone["name"], ipad["name"]
+              ),
+              file=sys.stderr,
+          )
+          print(iphone["udid"], ipad["udid"])
           ')
           test -n "$iphone_id"
           test -n "$ipad_id"
@@ -103,3 +118,12 @@ jobs:
             -resultBundlePath /tmp/GraffitiGuardTests.xcresult \
             -enableCodeCoverage YES \
             test
+
+      - name: Upload Apple test results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: apple-test-results-${{ github.run_attempt }}
+          path: /tmp/GraffitiGuardTests.xcresult
+          if-no-files-found: warn
+          retention-days: 14
