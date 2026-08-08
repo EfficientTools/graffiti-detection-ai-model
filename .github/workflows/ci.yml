@@ -17,6 +17,7 @@ jobs:
   test:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -49,12 +50,23 @@ jobs:
         run: pip-audit --local --progress-spinner off
 
       - name: Run test suite
+        if: matrix.python-version != '3.13'
         run: pytest -q -m "not gpu"
+
+      - name: Enforce coverage floor
+        if: matrix.python-version == '3.13'
+        run: |
+          pytest -q -m "not gpu" \
+            --cov=graffiti_detection \
+            --cov=scripts \
+            --cov-report=term-missing:skip-covered \
+            --cov-fail-under=40
 
   package:
     name: Validate package
     needs: test
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
 
     steps:
       - name: Check out source
