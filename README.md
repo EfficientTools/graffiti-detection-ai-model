@@ -29,7 +29,7 @@ Prefer a ready-to-use mobile experience? Graffiti Guard runs private, offline de
   </a>
 </p>
 
-<p align="center"><sub>Version 1.0 is awaiting App Review. The link becomes active when Apple publishes the app.</sub></p>
+<p align="center"><sub>Available for iPhone and iPad. Image analysis stays entirely on-device.</sub></p>
 
 ## Why I Built It
 

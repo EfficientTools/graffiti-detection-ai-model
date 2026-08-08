@@ -32,7 +32,7 @@ xcodebuild \
   build
 ```
 
-GitHub Actions builds Debug and Release configurations and runs the Core ML contract tests on an iPhone simulator.
+GitHub Actions builds Debug and Release configurations and runs the Core ML contract and user-flow tests on current iPhone and iPad simulators.
 
 ## Publish
 
