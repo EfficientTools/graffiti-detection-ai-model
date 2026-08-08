@@ -413,11 +413,11 @@ class TestStreetMetrics(unittest.TestCase):
         self.assertAlmostEqual(mAP, 1.0, places=1)
 
     def test_map_no_predictions(self):
-        """No predictions should yield very low mAP (11-pt interpolation artefact)."""
+        """No predictions should yield zero mAP."""
         preds = {}
         gts = {0: [np.array([10, 10, 50, 50])]}
         mAP, _ = calculate_map(preds, gts, iou_threshold=0.5, num_classes=1)
-        self.assertLess(mAP, 0.15)  # near zero, artefact of recall padding
+        self.assertEqual(mAP, 0.0)
 
     def test_precision_recall_f1_perfect(self):
         p, r, f = calculate_precision_recall_f1(tp=10, fp=0, fn=0)

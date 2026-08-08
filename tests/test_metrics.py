@@ -87,6 +87,10 @@ class TestMetricEdgeCases(unittest.TestCase):
 
         self.assertEqual(results["mAP"], 0.0)
 
+    def test_average_precision_is_zero_without_predictions(self):
+        """A missed ground truth must not receive interpolation credit."""
+        self.assertEqual(calculate_ap([], num_gt=1), 0.0)
+
     def test_iou_edge_cases(self):
         """Test IoU with edge cases"""
         box = np.array([0, 0, 100, 100])

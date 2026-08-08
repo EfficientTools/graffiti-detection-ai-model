@@ -89,7 +89,7 @@ def calculate_ap(
     # calculate_ap(predictions=[(confidence, is_tp), ...], num_gt=int)
     predictions = predictions or []
     num_gt = int(num_gt or 0)
-    if num_gt == 0:
+    if num_gt == 0 or not predictions:
         return 0.0
 
     predictions = sorted(predictions, key=lambda x: x[0], reverse=True)
