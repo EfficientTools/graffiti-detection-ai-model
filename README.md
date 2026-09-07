@@ -59,7 +59,10 @@ Model quality is evidence, not a slogan. Evaluation produces a versioned report 
 
 ## Installation
 
-Python 3.9 or newer is required.
+Python 3.9 remains the package compatibility floor. The validated development
+setup below uses Python 3.12 with a fresh virtual environment. Older runtimes
+can restrict access to patched dependencies; run the dependency audit before
+deployment.
 
 ```bash
 pip install graffiti-detection-ai-model
@@ -76,9 +79,12 @@ For development from source:
 ```bash
 git clone https://github.com/EfficientTools/graffiti-detection-ai-model.git
 cd graffiti-detection-ai-model
-python -m venv venv
-source venv/bin/activate
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
+python -m pytest -q -m "not gpu"
+python -m pip_audit --local
 ```
 
 ## Python Usage
